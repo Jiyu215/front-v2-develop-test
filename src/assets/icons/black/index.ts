@@ -1,0 +1,10 @@
+export { ReactComponent as ChatIcon } from './chat.svg';
+export { ReactComponent as ClosedCaptioningIcon } from './closed-captioning.svg';
+export { ReactComponent as EmojiIcon } from './emoji.svg';
+export { ReactComponent as MicIcon } from './mic.svg';
+export { ReactComponent as MicOffIcon } from './mic-off.svg';
+export { ReactComponent as RecordIcon } from './record.svg';
+export { ReactComponent as ScreenShareIcon } from './screen-share.svg';
+export { ReactComponent as UsersIcon } from './users.svg';
+export { ReactComponent as VideoIcon } from './video.svg';
+export { ReactComponent as VideoOffIcon } from './video-off.svg';

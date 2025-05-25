@@ -1,0 +1,48 @@
+import styled from 'styled-components';
+import { ReactComponent as Logo } from 'assets/images/logo_home.svg';
+
+export const Wrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100vh;
+    background-color:${({theme})=>theme.colors.background.light};
+`;
+
+export const WaitingWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    height: 100%;
+    width:100%;
+`;
+
+export const JoinWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex:1.5;
+`;
+
+export const InputWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacings.md};
+    width: 80%;
+`;
+
+export const LogoImage = styled(Logo)`
+  width: 10rem;
+  height: auto;
+`;
+
+export const PreviewWapper = styled.div`
+    flex:2.5;
+    width:100%;
+    height:100%;
+    background-color:${({ theme }) => theme.colors.background.gray};
+`;
