@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   EmojiPickerOverlay,
   EmojiPickerContainer,
@@ -19,12 +19,11 @@ type EmojiPickerProps = {
 };
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participants, currentUserSessionId, hasSidebar }) => {
-  const [targetSessionId, setTargetSessionId] = React.useState<string | null>(null);
+  const [targetSessionId, setTargetSessionId] = useState<string>('');
 
   const handleSelect = (emojiName: string) => {
     const receiver = participants.find(p => p.sessionId === targetSessionId);
-    onSelect(emojiName, targetSessionId ? receiver! : null);
-    onClose(); // 선택 후 자동 닫기
+    onSelect(emojiName, targetSessionId ? receiver ?? null : null);
   };
 
   // ESC 눌러서 닫기
@@ -39,7 +38,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participan
   }, [onClose]);
 
   return (
-    <EmojiPickerOverlay hasSidebar={hasSidebar} onClick={onClose}>
+    <EmojiPickerOverlay $hasSidebar={hasSidebar} onClick={onClose}>
       <EmojiPickerContainer onClick={(e) => e.stopPropagation()}>
         <EmojiPickerHeader>
             <CloseButton onClick={onClose}>&times;</CloseButton>
@@ -57,7 +56,13 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participan
             value={targetSessionId}
             onChange={e => setTargetSessionId(e.target.value)}
             >
-            <option value={currentUserSessionId}>전체에게 보내기 (내 반응)</option>
+            {participants
+                .filter(p => p.sessionId === currentUserSessionId)
+                .map(p => (
+                <option key={p.sessionId} value={p.sessionId}>
+                    나 ({p.username})
+                </option>
+                ))}
             {participants
                 .filter(p => p.sessionId !== currentUserSessionId)
                 .filter((p, index, self) =>

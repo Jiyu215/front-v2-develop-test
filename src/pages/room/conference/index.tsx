@@ -27,6 +27,7 @@ interface UserData {
 }
 
 const wsServerUrl = "wss://vmo.o-r.kr:8080";
+// const wsServerUrl = "ws://localhost:8080";
 
 //trun 서버 연결
       const iceServers = [
@@ -46,7 +47,6 @@ const wsServerUrl = "wss://vmo.o-r.kr:8080";
     ];
 
 const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
-    
 
     //CallControls에서 받는 값
     const [micOn, setMicOn] = useState(true);
@@ -153,7 +153,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 case 'onIceCandidate': //사용자 peer연결
                     onIceCandidate(parsedMessage);
                     break;
-                case 'receiveVideoFrom': //비디오 연결
+                case 'receiveVideoAnswer': //비디오 연결
                     receiveVideoResponse(parsedMessage);
                     break;
                 case 'exitRoom':
@@ -174,9 +174,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 case 'videoStateChange':
                     handleVideoStateChange(parsedMessage);
                     break;
-                case 'sendPrivateEmoji': //비공개 이모지
-                    handleEmojiMessage(parsedMessage, true);
-                    break;
+                // case 'sendPrivateEmoji': //비공개 이모지
+                //     handleEmojiMessage(parsedMessage, true);
+                //     break;
                 case 'sendPublicEmoji': //공개 이모지
                     handleEmojiMessage(parsedMessage, false);
                     break;
@@ -254,9 +254,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             }
 
             const options = {
-                configuration: {
-                iceServers: iceServers  // iceServers 배열을 전달
-            },
+                 configuration: {
+                    iceServers: iceServers  // iceServers 배열을 전달
+                },
                 remoteVideo: videoElement,
                 onicecandidate: participant.onIceCandidate.bind(participant),
             };
@@ -318,7 +318,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 }
 
                 const options = {
-                    configuration: {
+                     configuration: {
                             iceServers: iceServers  // iceServers 배열을 전달
                         },
                     localVideo: stream,
@@ -562,7 +562,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         // 내가 보낸 메시지를 상태에 바로 추가
         const newMessage: ChatMessage = {
             type: isPrivate ? 'private' : 'public',
-            from: userData.username,  // 내가 보낸 메시지의 경우, userData에서 이름을 가져옵니다.
+            from: userData.username,  // 내가 보낸 메시지의 경우, userData에서 이름을 가져오기기
             to,
             content,
             sessionId: userData.sessionId,
@@ -571,11 +571,16 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         // 상태에 추가하여 즉시 표시되게 하기
         setChatMessages((prevMessages) => [...prevMessages, newMessage]);
 
-        const messagePayload = {
-            eventId: isPrivate ? 'sendDirectChat' : 'broadcastChat',
-            receiverSessionId: to,
-            message: content,
-        };
+        const messagePayload = isPrivate
+        ? {
+              eventId: 'sendPersonalChat',
+              receiverSessionId: to,
+              message: content,
+          }
+        : {
+              eventId: 'broadcastChat',
+              message: content,
+          };
 
         sendMessage(messagePayload);
     };
@@ -643,7 +648,17 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             <Header variant="compact" />
             <GalleryWrapper>
                 {Object.values(participants).map((participant) => (
-                    <ParticipantVideo isVideoOn={participant.videoOn} isAudioOn={participant.audioOn} key={participant.sessionId} sessionId={participant.sessionId} username={participant.username}  ref={videoRefs.current[participant.sessionId]}/>
+                    <ParticipantVideo
+                        key={participant.sessionId}
+                        sessionId={participant.sessionId}
+                        username={participant.username}
+                        isVideoOn={participant.videoOn}
+                        isAudioOn={participant.audioOn}
+                        ref={videoRefs.current[participant.sessionId]}
+                        incomingEmoji={
+                            emojiMessages.find((e) => e.sessionId === participant.sessionId)?.emoji
+                        }
+                        />
                 ))}
             </GalleryWrapper>
             <CallControls
@@ -693,7 +708,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 onClose={() => setEmotesVisible(false)}
                 onSelect={(emojiName, receiver) => {
                 const messagePayload = {
-                    eventId: receiver ? 'sendPrivateEmoji' : 'sendPublicEmoji',
+                    eventId: /*receiver ? 'sendPrivateEmoji' :*/ 'sendPublicEmoji',
                     senderSessionId: userData.sessionId,
                     receiverSessionId: receiver?.sessionId || userData.sessionId,
                     emoji: emojiName,

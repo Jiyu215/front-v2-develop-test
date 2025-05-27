@@ -36,7 +36,7 @@ export default class Participant {
         }
 
         const message = {
-            eventId: 'receiveVideoFrom',
+            eventId: 'receiveVideoAnswer',
             sessionId: this.sessionId,
             sdpOffer: offerSdp,
         };
