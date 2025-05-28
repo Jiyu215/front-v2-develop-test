@@ -26,8 +26,8 @@ interface UserData {
     videoOn: boolean;
 }
 
-const wsServerUrl = "wss://vmo.o-r.kr:8080";
-// const wsServerUrl = "ws://localhost:8080";
+// const wsServerUrl = "wss://vmo.o-r.kr:8080";
+const wsServerUrl = "ws://localhost:8080";
 
 //trun 서버 연결
       const iceServers = [
