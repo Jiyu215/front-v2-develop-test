@@ -1,33 +1,49 @@
 import React from 'react';
-import { MessagesWrapper, MessageContainer, Profile, MessageContent, Name, MessageText, MessageList } from './ChatMessages.styles';  // 스타일 추가
+import { MessagesWrapper, MessageContainer, Profile, MessageContent, Name, MessageText, MessageList,  MessageMeta, MessageBody, HighlightText } from './ChatMessages.styles';  // 스타일 추가
 import { ChatMessage } from 'types/chat';
 
 interface ChatMessagesProps {
-  chatMessages: ChatMessage[];
-  currentUserSessionId: string;
+    participants: { sessionId: string; username: string }[];
+    chatMessages: ChatMessage[];
+    currentUserSessionId: string;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, currentUserSessionId }) => {
-  return (
+const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, currentUserSessionId, participants }) => {
+
+    const getUsernameBySessionId = (sessionId: string) => {
+    return participants.find(p => p.sessionId === sessionId)?.username ?? '';
+    };
+    return (
     <MessagesWrapper>
         <MessageList>
         {chatMessages.map((msg, idx) => (
             <MessageContainer
-            key={idx}
-            isCurrentUser={msg.sessionId === currentUserSessionId} // 내 메시지인지 확인
+                key={idx}
+                isCurrentUser={msg.sessionId === currentUserSessionId}
             >
-            <Profile>
-                {msg.sessionId === currentUserSessionId ? '나' : msg.from}
-            </Profile>
-            <MessageContent isCurrentUser={msg.sessionId === currentUserSessionId}>
-                <Name>{msg.sessionId === currentUserSessionId ? 'You' : msg.from}</Name>
-                <MessageText>{msg.content}</MessageText>
-            </MessageContent>
+                <Profile>
+                    {msg.sessionId === currentUserSessionId ? '나' : msg.from}
+                </Profile>
+                <MessageContent isCurrentUser={msg.sessionId === currentUserSessionId}>
+                    {msg.type === 'private' && (
+                        <MessageMeta>
+                            {msg.sessionId === currentUserSessionId ? (
+                                <>To. <HighlightText>{getUsernameBySessionId(msg.to)}</HighlightText></>
+                            ) : (
+                                <>From. <HighlightText>{msg.from}</HighlightText></>
+                            )}
+                        </MessageMeta>
+                    )}
+                    <MessageBody isCurrentUser={msg.sessionId === currentUserSessionId}>
+                        <Name>{msg.sessionId === currentUserSessionId ? 'You' : msg.from}</Name>
+                        <MessageText>{msg.content}</MessageText>
+                    </MessageBody>
+                </MessageContent>
             </MessageContainer>
         ))}
-      </MessageList>
+        </MessageList>
     </MessagesWrapper>
-  );
+    );
 };
 
 export default ChatMessages;

@@ -18,6 +18,7 @@ type EmojiPickerProps = {
   hasSidebar: boolean;
 };
 
+
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participants, currentUserSessionId, hasSidebar }) => {
   const [targetSessionId, setTargetSessionId] = useState<string>('');
 
@@ -56,13 +57,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participan
             value={targetSessionId}
             onChange={e => setTargetSessionId(e.target.value)}
             >
-            {participants
-                .filter(p => p.sessionId === currentUserSessionId)
-                .map(p => (
-                <option key={p.sessionId} value={p.sessionId}>
-                    나 ({p.username})
-                </option>
-                ))}
+            <option value="" disabled hidden>수신자 선택</option>
             {participants
                 .filter(p => p.sessionId !== currentUserSessionId)
                 .filter((p, index, self) =>

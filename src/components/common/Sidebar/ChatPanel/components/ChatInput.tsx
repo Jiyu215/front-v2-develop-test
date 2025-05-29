@@ -4,10 +4,11 @@ import type { ChatMessageInput } from 'types/chat';
 
 interface ChatInputProps {
   participants: { sessionId: string; username: string }[];
+  currentUserSessionId: string;
   onSendMessage: (input: ChatMessageInput) => void;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ participants, onSendMessage }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ participants, currentUserSessionId, onSendMessage }) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('all');
 
@@ -29,11 +30,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ participants, onSendMessage }) =>
         <Label htmlFor="recipient-select">수신자 :</Label>
         <Select id="recipient-select" value={recipient} onChange={(e) => setRecipient(e.target.value)}>
           <option value="all">전체에게</option>
-          {participants.map((p) => (
-            <option key={p.sessionId} value={p.sessionId}>
-              {p.username}
-            </option>
-          ))}
+           {participants
+            .filter(p => p.sessionId !== currentUserSessionId) // ✅ 자기 자신 제외
+            .map((p) => (
+              <option key={p.sessionId} value={p.sessionId}>
+                {p.username}
+              </option>
+            ))}
         </Select>
       </SelectArea>
       <InputArea>

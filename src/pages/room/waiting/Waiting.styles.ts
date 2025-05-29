@@ -19,7 +19,7 @@ export const WaitingWrapper = styled.div`
     width:100%;
 `;
 
-export const JoinWrapper = styled.div`
+export const RoomActionWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;

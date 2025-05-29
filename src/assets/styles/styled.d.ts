@@ -10,9 +10,10 @@ declare module 'styled-components' {
             gray: string;
         };
         text: {
-            default: string,       
-            muted: string,         
-            inverse: string,       
+            default: string;       
+            muted: string;       
+            inverse: string; 
+            highlight: string     
         };
         link: string;
         border: string;
@@ -60,11 +61,11 @@ declare module 'styled-components' {
     };
     borders: {
         radius: {
-            sm: string
-            md: string
-            round: string
+            sm: string;
+            md: string;
+            round: string;
         },
-        width: string
+        width: string;
     },
   }
 }

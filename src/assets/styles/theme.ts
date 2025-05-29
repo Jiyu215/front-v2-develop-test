@@ -12,6 +12,7 @@ export const theme: DefaultTheme = {
       default: '#121212',        // 일반 텍스트
       muted: '#8A8A8A',          // 서브 텍스트 (설명 등)
       inverse: '#FFFFFF',        // 다크 배경에서 쓰는 텍스트
+      highlight: '#5F9DF7',      // 강조 텍스트
     },
     border: '#F1F0F0',           // 경계선/보더 색상
     link: '#007bff',             // 링크 색상 (파란색)

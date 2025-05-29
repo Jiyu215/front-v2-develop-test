@@ -20,10 +20,15 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, participants, onSen
     <PanelWrapper participantsVisible={participantsVisible}>
       <ChatHeader />
       <ChatMessagesWrapper>
-        <ChatMessages chatMessages={chatMessages} currentUserSessionId={currentUserSessionId}/>
+        <ChatMessages
+            participants={participants} 
+            chatMessages={chatMessages} 
+            currentUserSessionId={currentUserSessionId}
+        />
       </ChatMessagesWrapper>
       <ChatInput
         participants={participants}
+        currentUserSessionId={currentUserSessionId}
         onSendMessage={onSendMessage}
       />
     </PanelWrapper>

@@ -10,7 +10,7 @@ import { ChatMessage, ChatMessageInput } from 'types/chat';
 import { EmojiMessage } from 'types/emoji';
 import EmojiPicker from 'components/common/EmojiPicker';
 import ChangeNameForm from 'components/common/UserSettings/ChangeNameForm';
-
+import { useScreenRecording } from 'lib/hooks/useRecording';
 
 type ConferenceProps = {
   name: string;
@@ -26,11 +26,8 @@ interface UserData {
     videoOn: boolean;
 }
 
-// const wsServerUrl = "wss://vmo.o-r.kr:8080";
-const wsServerUrl = "ws://localhost:8080";
-
-//trun 서버 연결
-      const iceServers = [
+const wsServerUrl = "wss://vmo.o-r.kr:8080";
+const iceServers = [
         { urls: "stuns:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
         { urls: "stun:stun2.l.google.com:19302" },
@@ -59,9 +56,13 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const [captionsVisible, setCaptionsVisible] = useState(false);
     const [emotesVisible, setEmotesVisible] = useState(false);
 
+    const {
+    isRecording,
+    startRecording,
+    stopRecording
+    } = useScreenRecording();
+
     // 상태 변경을 위한 핸들러 함수들
-    // const handleMicToggle = () => setMicOn((prev) => !prev);
-    // const handleVideoToggle = () => setVideoOn((prev) => !prev);
     const handleMicToggle = () => {
         setMicOn((prev) => {
             const newMicState = !prev;
@@ -87,7 +88,15 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     };
 
     const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
-    const handleRecordingToggle = () => setRecording((prev) => !prev);
+    // const handleRecordingToggle = () => setRecording((prev) => !prev);
+    const handleRecordingToggle = () => {
+        setRecording((prev) => !prev);
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
     const handleCaptionsToggle = () => setCaptionsVisible((prev) => !prev);
     const handleChatToggle = () => setChatVisible((prev) => !prev);
     const handleParticipantsToggle = () => setParticipantsVisible((prev) => !prev);
@@ -178,7 +187,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 //     handleEmojiMessage(parsedMessage, true);
                 //     break;
                 case 'sendPublicEmoji': //공개 이모지
-                    handleEmojiMessage(parsedMessage, false);
+                    handleEmojiMessage(parsedMessage);
                     break;
                 case 'changeName': //이름 변경
                     handleUsernameChanged(parsedMessage);
@@ -254,9 +263,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             }
 
             const options = {
-                 configuration: {
-                    iceServers: iceServers  // iceServers 배열을 전달
-                },
+                configuration: {
+                            iceServers: iceServers  // iceServers 배열을 전달
+                        },
                 remoteVideo: videoElement,
                 onicecandidate: participant.onIceCandidate.bind(participant),
             };
@@ -318,7 +327,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 }
 
                 const options = {
-                     configuration: {
+                    configuration: {
                             iceServers: iceServers  // iceServers 배열을 전달
                         },
                     localVideo: stream,
@@ -592,15 +601,12 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             receiverSessionId: string;
             receiverName: string;
             emoji: string;
-        },
-        isPrivate: boolean
-        ) => {
+        }) => {
         const emojiMessage: EmojiMessage = {
-            type: isPrivate ? 'private' : 'public',
             from: data.senderName,
             to: data.receiverName,
             emoji: data.emoji,
-            sessionId: data.senderSessionId,
+            sessionId: data.receiverSessionId,
         };
 
         setEmojiMessages((prev) => [...prev, emojiMessage]);
@@ -610,8 +616,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             setEmojiMessages((prev) => prev.filter((m) => m !== emojiMessage));
         }, 3000);
     };
-
-
     
     // 참가자 상태가 변경될 때마다 UI에 반영
     useEffect(() => {
@@ -648,18 +652,19 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             <Header variant="compact" />
             <GalleryWrapper>
                 {Object.values(participants).map((participant) => (
-                    <ParticipantVideo
-                        key={participant.sessionId}
-                        sessionId={participant.sessionId}
-                        username={participant.username}
-                        isVideoOn={participant.videoOn}
-                        isAudioOn={participant.audioOn}
+                    <ParticipantVideo 
+                        isVideoOn={participant.videoOn} 
+                        isAudioOn={participant.audioOn} 
+                        key={participant.sessionId} 
+                        sessionId={participant.sessionId} 
+                        username={participant.username}  
                         ref={videoRefs.current[participant.sessionId]}
-                        incomingEmoji={
-                            emojiMessages.find((e) => e.sessionId === participant.sessionId)?.emoji
+                        emojiName={
+                            emojiMessages.find((msg) => msg.sessionId === participant.sessionId)?.emoji
                         }
-                        />
+                    />
                 ))}
+                
             </GalleryWrapper>
             <CallControls
                 micOn={micOn}
@@ -707,13 +712,18 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 currentUserSessionId={userData.sessionId}
                 onClose={() => setEmotesVisible(false)}
                 onSelect={(emojiName, receiver) => {
-                const messagePayload = {
-                    eventId: /*receiver ? 'sendPrivateEmoji' :*/ 'sendPublicEmoji',
-                    senderSessionId: userData.sessionId,
-                    receiverSessionId: receiver?.sessionId || userData.sessionId,
-                    emoji: emojiName,
-                };
-                sendMessage(messagePayload);
+                    if (!receiver) {
+                        console.warn("❗ 수신자가 없습니다. 이모지를 보내지 않습니다.");
+                        return;
+                    }
+                    const messagePayload = {
+                        eventId: 'sendPublicEmoji',
+                        // senderSessionId: userData.sessionId,
+                        receiverSessionId: receiver.sessionId,
+                        emoji: emojiName,
+                    };
+                    
+                    sendMessage(messagePayload);
                 }}
                 hasSidebar={hasSidebar}
             />
