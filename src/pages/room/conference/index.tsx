@@ -26,7 +26,9 @@ interface UserData {
     videoOn: boolean;
 }
 
-const wsServerUrl = "wss://vmo.o-r.kr:8080";
+// const wsServerUrl = "wss://vmo.o-r.kr:8080";
+const wsServerUrl = "ws://localhost:8080";
+
 const iceServers = [
         { urls: "stuns:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
@@ -662,6 +664,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                         emojiName={
                             emojiMessages.find((msg) => msg.sessionId === participant.sessionId)?.emoji
                         }
+                        mySessionId={userData.sessionId}
                     />
                 ))}
                 

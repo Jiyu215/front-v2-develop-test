@@ -18,10 +18,12 @@ type Props = {
   isVideoOn: boolean;
   isAudioOn: boolean;
   emojiName?: string;
+  mySessionId: string;
 };
 
 const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
-  ({ sessionId, username, isVideoOn, isAudioOn, emojiName }, ref) => {
+  ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId }, ref) => {
+    console.log("Participants Video Ref",ref);
     return (
       <ParticipantContainer id={sessionId}>
         {isVideoOn ? (
@@ -29,7 +31,7 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
             id={`video-${sessionId}`}
             ref={ref}
             autoPlay
-            muted
+            muted={sessionId === mySessionId}
             playsInline
           />
         ) : (
