@@ -65,6 +65,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     stopRecording
     } = useScreenRecording();
 
+    const [recordedFiles, setRecordedFiles] = useState<string[]>([]);
+
+
     // 상태 변경을 위한 핸들러 함수들
     const handleMicToggle = () => {
         setMicOn((prev) => {
@@ -127,6 +130,14 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         setRecording(false);
         setRecordingPaused(false);
     };
+
+    const handleSaveRecording = (fileName: string) => {
+        sendMessage({
+            eventId: 'saveRecording',
+            fileName,
+        });
+    };
+
 
     const handleCaptionsToggle = () => setCaptionsVisible((prev) => !prev);
     const handleChatToggle = () => setChatVisible((prev) => !prev);
@@ -224,10 +235,10 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     handleUsernameChanged(parsedMessage);
                     break;
                 // 녹화 기능
-                case 'startRecording':
+                case 'startRecording':  //녹화 시작
                     console.log(parsedMessage);
                     break;
-                case 'requestRecordingPermission':
+                case 'requestRecordingPermission': //권한 요청
                     console.log(parsedMessage);
                     break;
                 case 'grantRecordingPermission':
@@ -240,9 +251,14 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     break;
                 case 'stopRecording':
                     console.log(parsedMessage);
+                    const fileName = parsedMessage.fileName;
+                    if (fileName) {
+                        setRecordedFiles(prev => [...prev, fileName]);
+                    }
                     break;
                 case 'saveRecording':
                     console.log(parsedMessage);
+                    
                     break;
                 case 'pauseRecording':
                     console.log(parsedMessage);
@@ -736,6 +752,21 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                         mySessionId={userData.sessionId}
                     />
                 ))}
+                
+            {/* 예시 녹화 파일 목록 */}
+            {recordedFiles.length > 0 && (
+            <div>
+                <h4>녹화 파일 목록</h4>
+                <ul>
+                {recordedFiles.map((file, index) => (
+                    <li key={index}>
+                    {file}
+                    <button onClick={() => handleSaveRecording(file)}>다운로드</button>
+                    </li>
+                ))}
+                </ul>
+            </div>
+            )}
                 
             </GalleryWrapper>
             {/* 예시 버튼 */}
