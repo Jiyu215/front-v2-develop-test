@@ -23,7 +23,7 @@ type Props = {
 
 const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
   ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId }, ref) => {
-    console.log("Participants Video Ref",ref);
+    console.log("Participants Video Ref", ref);
     return (
       <ParticipantContainer id={sessionId}>
         {isVideoOn ? (

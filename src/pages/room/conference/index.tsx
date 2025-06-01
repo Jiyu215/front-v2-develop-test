@@ -55,6 +55,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const [chatVisible, setChatVisible] = useState(false);
     const [screenSharing, setScreenSharing] = useState(false);
     const [recording, setRecording] = useState(false);
+    const [recordingPaused, setRecordingPaused] = useState(false); // 일시정지 여부
     const [captionsVisible, setCaptionsVisible] = useState(false);
     const [emotesVisible, setEmotesVisible] = useState(false);
 
@@ -91,14 +92,42 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
 
     const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
     // const handleRecordingToggle = () => setRecording((prev) => !prev);
+    // const handleRecordingToggle = () => {
+    //     setRecording((prev) => !prev);
+    //     if (isRecording) {
+    //         stopRecording();
+    //     } else {
+    //         startRecording();
+    //     }
+    // };
     const handleRecordingToggle = () => {
-        setRecording((prev) => !prev);
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
+        //방장의 경우
+        if(roomLeader.sessionId===userData.sessionId){
+            
+            sendMessage({eventId:'startRecording'});
+            setRecording((prev) => !prev);
+            setRecordingPaused(false);
+        }else{
+            sendMessage({eventId:'requestRecordingPermission'});  
         }
     };
+
+    const handleRecordingPause = () => {
+        sendMessage({ eventId: 'pauseRecording' });
+        setRecordingPaused(true);
+    };
+
+    const handleRecordingResume = () => {
+        sendMessage({ eventId: 'resumeRecording' });
+        setRecordingPaused(false);
+    };
+
+    const handleRecordingStop = () => {
+        sendMessage({ eventId: 'stopRecording' });
+        setRecording(false);
+        setRecordingPaused(false);
+    };
+
     const handleCaptionsToggle = () => setCaptionsVisible((prev) => !prev);
     const handleChatToggle = () => setChatVisible((prev) => !prev);
     const handleParticipantsToggle = () => setParticipantsVisible((prev) => !prev);
@@ -193,6 +222,34 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     break;
                 case 'changeName': //이름 변경
                     handleUsernameChanged(parsedMessage);
+                    break;
+                // 녹화 기능
+                case 'startRecording':
+                    console.log(parsedMessage);
+                    break;
+                case 'requestRecordingPermission':
+                    console.log(parsedMessage);
+                    break;
+                case 'grantRecordingPermission':
+                    handlePermissionResponse(true, parsedMessage.username); // 수락
+                    console.log(parsedMessage);
+                    break;
+                case 'denyRecordingPermission':
+                    handlePermissionResponse(false, parsedMessage.username); // 거절
+                    console.log(parsedMessage);
+                    break;
+                case 'stopRecording':
+                    console.log(parsedMessage);
+                    break;
+                case 'saveRecording':
+                    console.log(parsedMessage);
+                    break;
+                case 'pauseRecording':
+                    console.log(parsedMessage);
+                    break;  
+                case 'resumeRecording':
+                    console.log(parsedMessage);
+                    break;
                 default:
                     console.error('Unrecognized message', parsedMessage);
             }
@@ -217,6 +274,18 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             ws.current.send(jsonMessage);
         }
     }
+
+    const handlePermissionResponse = (granted: boolean, msg: any) => {
+        if (granted) {
+            console.log(`녹화 권한을 수락했습니다.`);
+            // 🔴 녹화 시작 로직
+            setRecording((prev) => !prev);
+            sendMessage({ eventId: 'startRecording' });
+        } else {
+            console.log(`녹화 권한을 거절했습니다.`);
+            // ⛔ 혹은 UI 알림, 토스트 등
+        }
+    };
     
     const roomCreated = (response:{ 
         sessionId: string;
@@ -260,7 +329,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             const videoElement = videoRefs.current[sender.sessionId]?.current;
 
             if (!videoElement) {
-                console.warn("❗ 비디오 요소가 아직 준비되지 않았습니다:", sender.sessionId);
+                console.warn(" ❗비디오 요소가 아직 준비되지 않았습니다:", sender.sessionId);
                 return;
             }
 
@@ -484,7 +553,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     };
 
 
-
     const handleLeaderChanged = (data: { sessionId: string; username: string }) => {
         setRoomLeader({
             sessionId: data.sessionId,
@@ -619,6 +687,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         }, 3000);
     };
     
+    
     // 참가자 상태가 변경될 때마다 UI에 반영
     useEffect(() => {
         // 참가자가 추가되었을 때 화면에 비디오 업데이트
@@ -669,6 +738,12 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 ))}
                 
             </GalleryWrapper>
+            {/* 예시 버튼 */}
+            <div>
+                <button onClick={handleRecordingStop}>녹화 정지</button>
+                <button onClick={handleRecordingResume}>재개</button>
+                <button onClick={handleRecordingPause}>일시정지</button>
+            </div>
             <CallControls
                 micOn={micOn}
                 setMicOn={handleMicToggle}
