@@ -66,6 +66,8 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     } = useScreenRecording();
 
     const [recordedFiles, setRecordedFiles] = useState<string[]>([]);
+    const [recordPermissionRequester, setRecordPermissionRequester] = useState<any | null>(null);
+
 
 
     // 상태 변경을 위한 핸들러 함수들
@@ -240,14 +242,17 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     break;
                 case 'requestRecordingPermission': //권한 요청
                     console.log(parsedMessage);
+                    setRecordPermissionRequester(parsedMessage);
                     break;
                 case 'grantRecordingPermission':
-                    handlePermissionResponse(true, parsedMessage.username); // 수락
+                    handlePermissionResponse(true, parsedMessage); // 수락
                     console.log(parsedMessage);
+                    setRecordPermissionRequester(null); 
                     break;
                 case 'denyRecordingPermission':
-                    handlePermissionResponse(false, parsedMessage.username); // 거절
+                    handlePermissionResponse(false, parsedMessage); // 거절
                     console.log(parsedMessage);
+                    setRecordPermissionRequester(null);
                     break;
                 case 'stopRecording':
                     console.log(parsedMessage);
@@ -752,6 +757,38 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                         mySessionId={userData.sessionId}
                     />
                 ))}
+
+                {recordPermissionRequester && (
+                <div className="permission-popup">
+                    <p>
+                    <strong>{recordPermissionRequester.username}</strong> 님이 녹화 권한을 요청했습니다.
+                    </p>
+                    <button
+                    onClick={() => {
+                        sendMessage({
+                        eventId: 'grantRecordingPermission',
+                        targetSessionId: recordPermissionRequester.sessionId,
+                        });
+                        setRecordPermissionRequester(null);
+                    }}
+                    >
+                    수락
+                    </button>
+                    <button
+                    onClick={() => {
+                        sendMessage({
+                        eventId: 'denyRecordingPermission',
+                        targetSessionId: recordPermissionRequester.sessionId,
+                        });
+                        setRecordPermissionRequester(null);
+                    }}
+                    >
+                    거절
+                    </button>
+                </div>
+                )}
+
+
                 
             {/* 예시 녹화 파일 목록 */}
             {recordedFiles.length > 0 && (
