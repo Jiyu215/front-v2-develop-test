@@ -26,8 +26,8 @@ interface UserData {
     videoOn: boolean;
 }
 
-// const wsServerUrl = "wss://vmo.o-r.kr:8080";
-const wsServerUrl = "ws://localhost:8080";
+const wsServerUrl = "wss://vmo.o-r.kr:8080";
+// const wsServerUrl = "ws://localhost:8080";
 
 const iceServers = [
         { urls: "stuns:stun.l.google.com:19302" },
