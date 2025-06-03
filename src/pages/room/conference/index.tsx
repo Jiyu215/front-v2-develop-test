@@ -333,45 +333,43 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         if (!participant) {
             participant = new Participant(sender.sessionId, sender.username, sendMessage, sender.videoOn, sender.audioOn);
 
-            // 비디오 ref 등록
             if (!videoRefs.current[sender.sessionId]) {
-                videoRefs.current[sender.sessionId] = React.createRef<HTMLVideoElement>();
+            videoRefs.current[sender.sessionId] = React.createRef<HTMLVideoElement>();
             }
 
             participantsRef.current[sender.sessionId] = participant;
+
             setParticipants(prev => ({
-                ...prev,
-                [sender.sessionId]: participant
+            ...prev,
+            [sender.sessionId]: participant,
             }));
         }
 
-        // 💡 렌더링 이후까지 기다렸다가 비디오 연결 시도
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             const videoElement = videoRefs.current[sender.sessionId]?.current;
 
             if (!videoElement) {
-                console.warn(" ❗비디오 요소가 아직 준비되지 않았습니다:", sender.sessionId);
-                return;
+            console.warn('비디오 엘리먼트가 아직 없습니다:', sender.sessionId);
+            return;
             }
 
             const options = {
-                configuration: {
-                            iceServers: iceServers  // iceServers 배열을 전달
-                        },
-                remoteVideo: videoElement,
-                onicecandidate: participant.onIceCandidate.bind(participant),
+            configuration: { iceServers },
+            remoteVideo: videoElement,
+            onicecandidate: participant.onIceCandidate.bind(participant),
             };
 
             participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function (error) {
-                if (error) {
-                    console.error("WebRtcPeerRecvonly 생성 실패:", error);
-                    return;
-                }
+            if (error) {
+                console.error('WebRtcPeerRecvonly 생성 실패:', error);
+                return;
+            }
 
-                this.generateOffer(participant.offerToReceiveVideo.bind(participant));
+            this.generateOffer(participant.offerToReceiveVideo.bind(participant));
             });
-        }, 100); // 💡 100ms 정도의 짧은 지연
+        });
     };
+
 
 
     const newUserJoined = (msg) => {
@@ -443,7 +441,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     msg.participants.forEach((existingParticipantInfo) => {
                         // 기존 참가자 처리
                         const existingParticipant = parseParticipant(existingParticipantInfo);
-
+                        console.log("✅ 파싱된 참가자 정보:", existingParticipant);
                         // 기존 참가자에게 비디오 수신 설정
                         receiveVideo(existingParticipant);
                     });
@@ -455,30 +453,33 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     }
 
     const parseParticipant = (participantInfo) => {
-        // participantInfo가 문자열이면 JSON 파싱 시도
-        if (typeof participantInfo === 'string') {
-            try {
-                const parsed = JSON.parse(participantInfo);
-                return {
-                    sessionId: parsed.sessionId,
-                    username: parsed.username,
-                    audioOn: parsed.audioOn === "true",
-                    videoOn: parsed.videoOn === "true"
-                };
-            } catch (e) {
-                console.error("❌ 문자열 파싱 실패:", participantInfo, e);
-                return null;
-            }
-        }
-    
-        // 이미 객체이면 그대로 필드 꺼내기
-        return {
-            sessionId: participantInfo.sessionId,
-            username: participantInfo.username,
-            audioOn: typeof participantInfo.audioOn === 'string' ? participantInfo.audioOn === "true" : !!participantInfo.audioOn,
-            videoOn: typeof participantInfo.videoOn === 'string' ? participantInfo.videoOn === "true" : !!participantInfo.videoOn
+    // 문자열이면 JSON 파싱
+    if (typeof participantInfo === 'string') {
+        try {
+        const parsed = JSON.parse(participantInfo);
+        const result = {
+            sessionId: parsed.sessionId,
+            username: parsed.username,
+            audioOn: typeof parsed.audioOn === "string" ? parsed.audioOn === "true" : !!parsed.audioOn,
+            videoOn: typeof parsed.videoOn === "string" ? parsed.videoOn === "true" : !!parsed.videoOn,
         };
+        console.log("✅ 파싱된 참가자:", result);
+        return result;
+        } catch (e) {
+        console.error("❌ 문자열 파싱 실패:", participantInfo, e);
+        return null;
+        }
+    }
+
+    // 객체면 그대로 처리
+    return {
+        sessionId: participantInfo.sessionId,
+        username: participantInfo.username,
+        audioOn: typeof participantInfo.audioOn === 'string' ? participantInfo.audioOn === "true" : !!participantInfo.audioOn,
+        videoOn: typeof participantInfo.videoOn === 'string' ? participantInfo.videoOn === "true" : !!participantInfo.videoOn
     };
+    };
+
 
     const receiveVideoResponse = (result: { sessionId: string; sdpAnswer: string }) => {
         // 참가자가 존재하는지 확인
@@ -505,7 +506,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         });
     };
 
-
     const onIceCandidate = (message: any) => {
         const { sessionId, candidate } = message;
         const participant = participantsRef.current[sessionId];
@@ -521,6 +521,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             console.error(`rtcPeer is not initialized for participant ${sessionId}`);
             return;
         }
+        
 
         // 3. ICE 후보를 rtcPeer에 추가
         const iceCandidate = new RTCIceCandidate(candidate);
@@ -710,10 +711,10 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     
     
     // 참가자 상태가 변경될 때마다 UI에 반영
-    useEffect(() => {
-        // 참가자가 추가되었을 때 화면에 비디오 업데이트
-        console.log('Participants updated:', participants);
-    }, [participants]);
+    // useEffect(() => {
+    //     // 참가자가 추가되었을 때 화면에 비디오 업데이트
+    //     console.log('Participants updated:', participants);
+    // }, [participants]);
 
     // 마이크 상태 변경 시 오디오 트랙에 반영
     useEffect(() => {
@@ -736,6 +737,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             });
         }
     }, [videoOn]);
+    
 
 
     return (

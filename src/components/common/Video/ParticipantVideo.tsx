@@ -26,7 +26,14 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
     console.log("Participants Video Ref", ref);
     return (
       <ParticipantContainer id={sessionId}>
-        {isVideoOn ? (
+        <StyledVideo
+            id={`video-${sessionId}`}
+            ref={ref}
+            autoPlay
+            muted={sessionId === mySessionId}
+            playsInline
+          />
+        {/* {isVideoOn ? (
           <StyledVideo
             id={`video-${sessionId}`}
             ref={ref}
@@ -36,7 +43,7 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
           />
         ) : (
           <Placeholder>{username.charAt(0).toUpperCase()}</Placeholder>
-        )}
+        )} */}
 
         <UsernameOverlay>
           <UsernameContent>
