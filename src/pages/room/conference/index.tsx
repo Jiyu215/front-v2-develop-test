@@ -280,9 +280,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                         setRecordedFiles(prev => [...prev, fileName]);
                     }
                     break;
-                // case 'saveRecording':
-                //     console.log(parsedMessage);
-                //     break;
+                case 'saveRecording':
+                    console.log(parsedMessage);
+                    break;
                 case 'pauseRecording':
                     console.log(parsedMessage);
                     break;  
