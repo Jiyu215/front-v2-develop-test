@@ -66,6 +66,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     } = useScreenRecording();
 
     const [recordedFiles, setRecordedFiles] = useState<string[]>([]);
+
     const [recordPermissionRequester, setRecordPermissionRequester] = useState<any | null>(null);
 
 
@@ -133,12 +134,30 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         setRecordingPaused(false);
     };
 
-    const handleSaveRecording = (fileName: string) => {
-        sendMessage({
-            eventId: 'saveRecording',
-            fileName,
-        });
+    const handleDownloadRecording = async (fileName: string) => {
+        const downloadUrl = `https://vmo.o-r.kr:8080/api/recordings/${fileName}`;
+
+        try {
+            // 먼저 파일이 존재하는지 HEAD 요청으로 확인
+            const response = await fetch(downloadUrl, { method: 'HEAD' });
+
+            if (!response.ok) {
+                throw new Error('파일을 찾을 수 없습니다.');
+            }
+
+            // 파일이 존재하면 다운로드 진행
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('다운로드 중 오류 발생:', error);
+            alert(`⚠️ 다운로드에 실패했습니다: ${error.message}`);
+        }
     };
+
 
 
     const handleCaptionsToggle = () => setCaptionsVisible((prev) => !prev);
@@ -261,10 +280,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                         setRecordedFiles(prev => [...prev, fileName]);
                     }
                     break;
-                case 'saveRecording':
-                    console.log(parsedMessage);
-                    
-                    break;
+                // case 'saveRecording':
+                //     console.log(parsedMessage);
+                //     break;
                 case 'pauseRecording':
                     console.log(parsedMessage);
                     break;  
@@ -506,6 +524,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         });
     };
 
+
     const onIceCandidate = (message: any) => {
         const { sessionId, candidate } = message;
         const participant = participantsRef.current[sessionId];
@@ -521,7 +540,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             console.error(`rtcPeer is not initialized for participant ${sessionId}`);
             return;
         }
-        
 
         // 3. ICE 후보를 rtcPeer에 추가
         const iceCandidate = new RTCIceCandidate(candidate);
@@ -711,10 +729,10 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     
     
     // 참가자 상태가 변경될 때마다 UI에 반영
-    // useEffect(() => {
-    //     // 참가자가 추가되었을 때 화면에 비디오 업데이트
-    //     console.log('Participants updated:', participants);
-    // }, [participants]);
+    useEffect(() => {
+        // 참가자가 추가되었을 때 화면에 비디오 업데이트
+        console.log('Participants updated:', participants);
+    }, [participants]);
 
     // 마이크 상태 변경 시 오디오 트랙에 반영
     useEffect(() => {
@@ -800,12 +818,13 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 {recordedFiles.map((file, index) => (
                     <li key={index}>
                     {file}
-                    <button onClick={() => handleSaveRecording(file)}>다운로드</button>
+                    <button onClick={() => handleDownloadRecording(file)}>다운로드</button>
                     </li>
                 ))}
                 </ul>
             </div>
             )}
+
                 
             </GalleryWrapper>
             {/* 예시 버튼 */}
