@@ -89,7 +89,10 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         if(roomLeader.sessionId===userData.sessionId){   
             startRecording();
         }else{
-            sendMessage({eventId:'requestRecordingPermission'});  
+            sendMessage({
+                eventId:'requestRecordingPermission',
+                sessionId: userData.sessionId
+            });  
         }
 
         stopRecording();
