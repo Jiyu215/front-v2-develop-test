@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import CallControlButton from './Button/CallControlButton';
+import CollapsibleControls from './CollapsibleControls';
 
 import {
   MicIcon,
@@ -14,7 +15,7 @@ import {
   ClosedCaptioningIcon
 } from 'assets/icons/black';
 
-import { ControlsWrapper, InteractionControls, MediaControls, SystemControls } from './CallControls.styles';
+import { ControlsWrapper, InteractionControls, MediaControls, ControlsToggleGroup, SystemControls } from './CallControls.styles';
 import Button from '../Button';
 
 type CallControlsProps = {
@@ -35,13 +36,16 @@ type CallControlsProps = {
     emotesVisible: boolean;
     setEmotesVisible: () => void; 
     onExit: () => void;
+
+    recordingListVisible: boolean;  // 녹화본 리스트 팝업 상태
+    setRecordingListVisible: () => void;  // 녹화본 리스트 팝업 열기/닫기 함수
 };
 
 const CallControls: React.FC<CallControlsProps> = ({
     micOn, setMicOn,
     videoOn, setVideoOn,
     screenSharing, setScreenSharing,
-    recording, setRecording,
+    recording, setRecording, recordingListVisible, setRecordingListVisible,
     captionsVisible, setCaptionsVisible,
     chatVisible, setChatVisible, 
     participantsVisible, setParticipantsVisible, 
@@ -50,67 +54,76 @@ const CallControls: React.FC<CallControlsProps> = ({
 }) => {
 
     return (
-    <>
         <ControlsWrapper>
-        <MediaControls>
-            <CallControlButton
-                onClick={setMicOn}
-                active={micOn}
-                icon={micOn ? <MicIcon /> : <MicOffIcon />}
-                label={micOn ? 'Mute' : 'Unmute'}
-                variant='media'
-            />
-            <CallControlButton
-                onClick={setVideoOn}
-                active={videoOn}
-                icon={videoOn ? <VideoIcon /> : <VideoOffIcon />}
-                label={videoOn ? 'Stop Video' : 'Start Video'}
-                variant='media'
-            />
-        </MediaControls>
-        <InteractionControls>
-            <CallControlButton
-                onClick={setParticipantsVisible}
-                active={participantsVisible}
-                icon={<UsersIcon/>}
-                label='Participants'
-            />
-            <CallControlButton
-                onClick={setChatVisible}
-                active={chatVisible}
-                icon={<ChatIcon />}
-                label='Chat'
-            />
-            <CallControlButton
-                onClick={setScreenSharing}
-                active={screenSharing}
-                icon={<ScreenShareIcon />}
-                label='Share Screen'
-            />
-            <CallControlButton
-                onClick={setRecording}
-                active={recording}
-                icon={<RecordIcon />}
-                label='Record'
-            />
-            <CallControlButton
-                onClick={setCaptionsVisible}
-                active={captionsVisible}
-                icon={<ClosedCaptioningIcon />}
-                label='Show Captions'
-            />
-            <CallControlButton
-                onClick={setEmotesVisible}
-                active={emotesVisible}
-                icon={<EmojiIcon />}
-                label='Emotes'
-            />
-        </InteractionControls>
-        <SystemControls>
-            <Button onClick={onExit} variant='exit'>Leave</Button>
-        </SystemControls>
+            <MediaControls>
+                <ControlsToggleGroup $active={micOn}>
+                    <CallControlButton
+                        onClick={setMicOn}
+                        active={micOn}
+                        icon={micOn ? <MicIcon /> : <MicOffIcon />}
+                        label={micOn ? 'Mute' : 'Unmute'}
+                        variant='media'
+                    />
+                    <CollapsibleControls active={micOn}/>
+                </ControlsToggleGroup>
+                <ControlsToggleGroup $active={videoOn}>
+                    <CallControlButton
+                        onClick={setVideoOn}
+                        active={videoOn}
+                        icon={videoOn ? <VideoIcon /> : <VideoOffIcon />}
+                        label={videoOn ? 'Stop Video' : 'Start Video'}
+                        variant='media'
+                    />
+                    <CollapsibleControls active={videoOn}/>
+                </ControlsToggleGroup>
+            </MediaControls>
+            <InteractionControls>
+                <CallControlButton
+                    onClick={setParticipantsVisible}
+                    active={participantsVisible}
+                    icon={<UsersIcon/>}
+                    label='Participants'
+                />
+                <CallControlButton
+                    onClick={setChatVisible}
+                    active={chatVisible}
+                    icon={<ChatIcon />}
+                    label='Chat'
+                />
+                <CallControlButton
+                    onClick={setScreenSharing}
+                    active={screenSharing}
+                    icon={<ScreenShareIcon />}
+                    label='Share Screen'
+                />
+                <ControlsToggleGroup $active={!recording}>
+                    <CallControlButton
+                        onClick={setRecording}
+                        icon={<RecordIcon />}
+                        label='Record'
+                    />
+                    <CollapsibleControls 
+                        active={!recording} 
+                        onToggle={setRecordingListVisible}
+                        isCollapsed={recordingListVisible}/>
+                </ControlsToggleGroup>
+                <CallControlButton
+                    onClick={setCaptionsVisible}
+                    active={captionsVisible}
+                    icon={<ClosedCaptioningIcon />}
+                    label='Show Captions'
+                />
+                <CallControlButton
+                    onClick={setEmotesVisible}
+                    active={emotesVisible}
+                    icon={<EmojiIcon />}
+                    label='Emotes'
+                />
+            </InteractionControls>
+            <SystemControls>
+                <Button onClick={onExit} variant='exit'>Leave</Button>
+            </SystemControls>
         </ControlsWrapper>
-    </>
     );
 };
 

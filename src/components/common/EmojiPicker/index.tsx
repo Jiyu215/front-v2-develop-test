@@ -39,8 +39,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participan
   }, [onClose]);
 
   return (
-    <EmojiPickerOverlay $hasSidebar={hasSidebar} onClick={onClose}>
-      <EmojiPickerContainer onClick={(e) => e.stopPropagation()}>
+    <EmojiPickerOverlay onClick={onClose}>
+      <EmojiPickerContainer $hasSidebar={hasSidebar} onClick={(e) => e.stopPropagation()}>
         <EmojiPickerHeader>
             <CloseButton onClick={onClose}>&times;</CloseButton>
         </EmojiPickerHeader>

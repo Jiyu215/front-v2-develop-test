@@ -1,2 +1,11 @@
 export { ReactComponent as MicIcon } from './mic.svg';
 export { ReactComponent as MicOffIcon } from './mic-off.svg';
+export { ReactComponent as RecordIcon } from './record.svg';
+export { ReactComponent as DownIcon } from './down.svg';
+export { ReactComponent as UpIcon } from './up.svg';
+export { ReactComponent as Pause } from './pause.svg';
+export { ReactComponent as Play } from './play.svg';
+export { ReactComponent as Stop } from './stop.svg';
+export { ReactComponent as Up } from './up.svg';
+export { ReactComponent as VolumeOff } from './volume-off.svg';
+export { ReactComponent as VolumeUp } from './volume-up.svg';

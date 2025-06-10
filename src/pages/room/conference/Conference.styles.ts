@@ -15,6 +15,7 @@ export const MainArea = styled.div`
 `;
 
 export const GalleryWrapper = styled.div`
+    position: relative;
     width: 100%;
     flex: 1;
     overflow: hidden;

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const EmojiPickerOverlay = styled.div<{ $hasSidebar?: boolean }>`
+export const EmojiPickerOverlay = styled.div`
   position: fixed;
   inset: 0;
   background: transparent;
@@ -18,11 +18,11 @@ export const EmojiPickerContainer = styled.div<{ $hasSidebar?: boolean }>`
   transform: translateX(-50%);
   background: ${({ theme }) => theme.colors.background.light};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borders.radius.md}; /* 위쪽만 둥글게 */
+  border-radius: ${({ theme }) => theme.borders.radius.md};
   padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
-  min-width: 20rem; /* 320px */
-  max-width: 28rem; /* 448px */
-  max-height: 20rem; /* 320px */
+  min-width: 20rem;
+  max-width: 28rem;
+  max-height: 20rem;
   overflow-y: auto;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
   z-index: 1000;

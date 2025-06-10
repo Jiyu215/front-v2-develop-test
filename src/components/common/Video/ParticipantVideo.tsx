@@ -23,27 +23,19 @@ type Props = {
 
 const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
   ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId }, ref) => {
-    console.log("Participants Video Ref", ref);
     return (
       <ParticipantContainer id={sessionId}>
-        <StyledVideo
-            id={`video-${sessionId}`}
-            ref={ref}
-            autoPlay
-            muted={sessionId === mySessionId}
-            playsInline
-          />
-        {/* {isVideoOn ? (
+        {isVideoOn ? (
           <StyledVideo
             id={`video-${sessionId}`}
             ref={ref}
             autoPlay
-            muted={sessionId === mySessionId}
+            muted={sessionId === mySessionId || !isAudioOn}
             playsInline
           />
         ) : (
           <Placeholder>{username.charAt(0).toUpperCase()}</Placeholder>
-        )} */}
+        )}
 
         <UsernameOverlay>
           <UsernameContent>

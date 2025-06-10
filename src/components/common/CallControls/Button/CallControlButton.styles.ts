@@ -9,6 +9,8 @@ export const StyledButton = styled.button<{ $active?: boolean; disabled?: boolea
   width: 100%;
   height: 100%;
 
+  padding: 0 ${({theme})=>theme.spacings.sm};
+
   min-height: 4rem;
 
   border: none;
@@ -23,7 +25,6 @@ export const StyledButton = styled.button<{ $active?: boolean; disabled?: boolea
 
   color: #fff;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-  transition: background-color 0.3s;
 
   &:hover {
     background-color: #F1F0F0;
