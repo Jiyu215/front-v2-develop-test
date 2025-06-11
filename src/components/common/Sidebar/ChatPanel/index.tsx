@@ -8,13 +8,14 @@ import Participant from 'lib/webrtc/Participant';
 
 interface ChatPanelProps {
   chatMessages: ChatMessage[];
+  systemMessages: SystemMessage[];
   participants: Participant[];
   currentUserSessionId: string;
   participantsVisible: boolean;
   onSendMessage: (input: ChatMessageInput) => void;
 }
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, participants, onSendMessage, currentUserSessionId, participantsVisible }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, systemMessages, participants, onSendMessage, currentUserSessionId, participantsVisible }) => {
 
   return (
     <PanelWrapper participantsVisible={participantsVisible}>
@@ -23,6 +24,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, participants, onSen
         <ChatMessages
             participants={participants} 
             chatMessages={chatMessages} 
+            systemMessages={systemMessages}
             currentUserSessionId={currentUserSessionId}
         />
       </ChatMessagesWrapper>

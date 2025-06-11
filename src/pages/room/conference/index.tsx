@@ -64,6 +64,8 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const [captionsVisible, setCaptionsVisible] = useState(false);
     const [emotesVisible, setEmotesVisible] = useState(false);
 
+
+
     const handleMicToggle = () => {
         const newMicState = !micOn;
         setMicOn(newMicState);
@@ -137,6 +139,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const [roomLeader, setRoomLeader] = useState<{ sessionId: string; username: string }>({ sessionId: '', username: ''});
     const [recordedFiles, setRecordedFiles] = useState<string[]>([]);
 
+    //녹화 중인 사람
+    const [recordingUsers, setRecordingUsers] = useState<string[]>([]);
+    const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
 
     const [userData, setUserData] = useState<UserData>({
         sessionId: '',
@@ -148,6 +153,8 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
 
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [emojiMessages, setEmojiMessages] = useState<EmojiMessage[]>([]);
+    const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
+
     const hasSidebar = chatVisible || participantsVisible;
 
     useEffect(()=>{
@@ -237,12 +244,15 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 
                 //녹화 권한
                 case 'requestRecordingPermission':
+                    setPendingSessionId(parsedMessage.sessionId); // 누가 요청했는지 저장
                     setRecordingPopupVisible(true);
                     break;
-                case 'grantRecordingPermission':
+                case 'grantPermissionMessage':
                     startRecording();
+                    console.log('녹화 권한 수락');
                     break;
-                case 'denyRecordingPermission':
+                case 'denyPermissionMessage':
+                    console.log('녹화 권한 취소');
                     break;
                 default:
                     console.error('Unrecognized message', parsedMessage);
@@ -356,7 +366,9 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             ...prevData,
             sessionId: msg.sessionId,
         }));
-        
+
+        //방코드 채팅에 추가
+        addSystemMessage(`📢 현재 방 코드: ${msg.roomId}`);
 
         if (!videoRefs.current[msg.sessionId]) {
             videoRefs.current[msg.sessionId] = React.createRef<HTMLVideoElement>();
@@ -670,6 +682,16 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         }, 3000);
     };
 
+    const addSystemMessage = (content: string) => {
+        setSystemMessages(prev => [
+            ...prev,
+            {
+            content,
+            timestamp: Date.now(),
+            },
+        ]);
+    };
+
     const finalizeRecordingSession = (fileName?: string) => {
         setRecording(false);
         setRecordingPaused(false);
@@ -780,6 +802,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             participants={Object.values(participants)} 
             participantsVisible={participantsVisible}
             chatVisible={chatVisible} 
+            systemMessages={systemMessages}
             chatMessages={chatMessages}
             currentUserSessionId={userData.sessionId}
             onSendMessage={sendChatMessage}
@@ -811,35 +834,73 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         <ListPopup
             title="녹화본 다운로드"
             items={recordedFiles}
-            renderItem={(item) => <span
-            onClick={() => {
+            renderItem={(item) => (
+            <span
+                onClick={async () => {
                 const fileName = `${item}.webm`;
-                const url = `https://vmo.o-r.kr:8080/api/recordings/${fileName}`;
+                const encodedFileName = encodeURIComponent(fileName); // 🔒 안전한 URL 변환
+                const url = `https://vmo.o-r.kr:8080/api/recordings/${encodedFileName}`;
 
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                closeRecordingList(); }}
-                title="클릭해서 다운로드">
-                    {item}
-                </span>}
+                try {
+                    // HEAD 요청으로 파일 존재 확인
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (!response.ok) {
+                    alert('녹화 파일이 존재하지 않습니다.');
+                    return;
+                    }
+
+                    // 다운로드 링크 생성 및 클릭
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    closeRecordingList();
+                } catch (error) {
+                    console.error('다운로드 중 오류 발생:', error);
+                    alert('다운로드에 실패했습니다.');
+                }
+                }}
+                title="클릭해서 다운로드"
+            >
+                {item}
+            </span>
+            )}
             onClose={closeRecordingList}
             hasSidebar={hasSidebar}
             popupLeft={45}
         />
         )}
+
         {recordingPopupVisible && (
-            <RecordingPermissionPopup 
+            <RecordingPermissionPopup
+                username={participants[pendingSessionId]?.username || '알 수 없는 사용자'} 
                 onGrant={() => {
-                    sendMessage({eventId: 'grantRecordingPermission'});
+                    setRecordingUsers((prev) =>
+                        prev.includes(pendingSessionId) ? prev : [...prev, pendingSessionId]
+                    );
+
+                    sendMessage({
+                        eventId: 'grantRecordingPermission',
+                        sessionId: pendingSessionId
+                    });
+
                     setRecordingPopupVisible(false);
+                    setPendingSessionId(null);
                 }}
                 onDeny={() => {
-                    sendMessage({eventId: 'denyRecordingPermission'});
+                    setRecordingUsers((prev) =>
+                        prev.filter((id) => id !== pendingSessionId)
+                    );
+
+                    sendMessage({
+                        eventId: 'denyRecordingPermission',
+                        sessionId: pendingSessionId
+                    });
+
                     setRecordingPopupVisible(false);
+                    setPendingSessionId(null);
                 }}
             />)}
     </Wrapper>

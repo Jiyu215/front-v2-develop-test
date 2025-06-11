@@ -17,5 +17,5 @@ export const ChatArea = styled.div`
 
 export const ParticipantsArea = styled.div`
   flex: 1;
-  border-bottom: ${({theme})=>theme.borders.width} solid ${({ theme }) => theme.colors.border};
+  border-bottom: ${({theme})=>theme.borders.width} solid #E8E8E8;
 `;

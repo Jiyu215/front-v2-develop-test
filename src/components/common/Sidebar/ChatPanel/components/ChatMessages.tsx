@@ -5,10 +5,11 @@ import { ChatMessage } from 'types/chat';
 interface ChatMessagesProps {
     participants: { sessionId: string; username: string }[];
     chatMessages: ChatMessage[];
+    systemMessages: SystemMessage[];
     currentUserSessionId: string;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, currentUserSessionId, participants }) => {
+const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, systemMessages, currentUserSessionId, participants }) => {
 
     const getUsernameBySessionId = (sessionId: string) => {
     return participants.find(p => p.sessionId === sessionId)?.username ?? '';
@@ -16,6 +17,19 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, currentUserSe
     return (
     <MessagesWrapper>
         <MessageList>
+        {systemMessages.map((msg, idx) => (
+          <div
+            key={`system-${idx}`}
+            style={{
+              textAlign: 'center',
+              fontStyle: 'italic',
+              color: '#888',
+              margin: '8px 0',
+            }}
+          >
+            {msg.content}
+          </div>
+        ))}
         {chatMessages.map((msg, idx) => (
             <MessageContainer
                 key={idx}
@@ -41,6 +55,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, currentUserSe
                 </MessageContent>
             </MessageContainer>
         ))}
+
+        
         </MessageList>
     </MessagesWrapper>
     );

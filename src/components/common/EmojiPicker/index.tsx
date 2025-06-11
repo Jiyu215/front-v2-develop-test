@@ -19,15 +19,20 @@ type EmojiPickerProps = {
 };
 
 
-const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participants, currentUserSessionId, hasSidebar }) => {
-  const [targetSessionId, setTargetSessionId] = useState<string>('');
+const EmojiPicker: React.FC<EmojiPickerProps> = ({
+  onSelect,
+  onClose,
+  participants,
+  currentUserSessionId,
+  hasSidebar,
+}) => {
+  // 자기 자신 포함, 첫 번째 참가자에게 보내기
+  const firstReceiver = participants.length > 0 ? participants[0] : null;
 
   const handleSelect = (emojiName: string) => {
-    const receiver = participants.find(p => p.sessionId === targetSessionId);
-    onSelect(emojiName, targetSessionId ? receiver ?? null : null);
+    onSelect(emojiName, firstReceiver);
   };
 
-  // ESC 눌러서 닫기
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -40,36 +45,18 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, participan
 
   return (
     <EmojiPickerOverlay onClick={onClose}>
-      <EmojiPickerContainer $hasSidebar={hasSidebar} onClick={(e) => e.stopPropagation()}>
+      <EmojiPickerContainer $hasSidebar={hasSidebar} onClick={e => e.stopPropagation()}>
         <EmojiPickerHeader>
-            <CloseButton onClick={onClose}>&times;</CloseButton>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
         </EmojiPickerHeader>
         <EmojiGrid>
-        {emojiList.map((emoji) => (
+          {emojiList.map(emoji => (
             <EmojiButton key={emoji.name} onClick={() => handleSelect(emoji.name)}>
-            <emoji.Component width={28} height={28} />
+              <emoji.Component width={28} height={28} />
             </EmojiButton>
-        ))}
+          ))}
         </EmojiGrid>
-        <TargetSelector>
-          <label>수신자:</label>
-          <select
-            value={targetSessionId}
-            onChange={e => setTargetSessionId(e.target.value)}
-            >
-            <option value="" disabled hidden>수신자 선택</option>
-            {participants
-                .filter(p => p.sessionId !== currentUserSessionId)
-                .filter((p, index, self) =>
-                index === self.findIndex(other => other.sessionId === p.sessionId)
-                ) 
-                .map(p => (
-                <option key={p.sessionId} value={p.sessionId}>
-                    {p.username}
-                </option>
-                ))}
-            </select>
-        </TargetSelector>
+        {/* 수신자 선택 UI 제거 */}
       </EmojiPickerContainer>
     </EmojiPickerOverlay>
   );
