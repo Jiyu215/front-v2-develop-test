@@ -839,7 +839,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 onClick={async () => {
                 const fileName = `${item}.webm`;
                 const encodedFileName = encodeURIComponent(fileName); // 🔒 안전한 URL 변환
-                const url = `https://vmo.o-r.kr:8080/api/recordings/${encodedFileName}`;
+                const url = `https://vmo.o-r.kr:8080/recordings/${encodedFileName}`;
 
                 try {
                     // HEAD 요청으로 파일 존재 확인
