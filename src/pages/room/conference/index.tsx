@@ -548,10 +548,10 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
 
 
 
-    const handleLeaderChanged = (data: { sessionId: string; username: string }) => {
+    const handleLeaderChanged = (data: { roomLeaderId: string; roomLeadername: string }) => {
         setRoomLeader({
-            sessionId: data.sessionId,
-            username: data.username,
+            sessionId: data.roomLeaderId,
+            username: data.roomLeadername,
         });
     };
 
