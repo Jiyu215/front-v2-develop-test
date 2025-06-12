@@ -247,11 +247,11 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                     setPendingSessionId(parsedMessage.sessionId); // 누가 요청했는지 저장
                     setRecordingPopupVisible(true);
                     break;
-                case 'grantPermissionMessage':
+                case 'grantRecordingPermission':
                     startRecording();
                     console.log('녹화 권한 수락');
                     break;
-                case 'denyPermissionMessage':
+                case 'denyRecordingPermission':
                     console.log('녹화 권한 취소');
                     break;
                 default:
