@@ -837,7 +837,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             renderItem={(item) => (
             <span
                 onClick={async () => {
-                const fileName = `${item}.webm`;
+                const fileName = `${item}`;
                 const encodedFileName = encodeURIComponent(fileName); // 🔒 안전한 URL 변환
                 const url = `https://vmo.o-r.kr:8080/recordings/${encodedFileName}`;
 
