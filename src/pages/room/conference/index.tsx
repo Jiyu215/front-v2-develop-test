@@ -34,8 +34,8 @@ interface UserData {
     videoOn: boolean;
 }
 
-const wsServerUrl = "wss://vmo.o-r.kr:8080";
-// const wsServerUrl = "ws://localhost:8080";
+// const wsServerUrl = "wss://vmo.o-r.kr:8080";
+const wsServerUrl = "ws://localhost:8080";
 
 const iceServers = [
     { urls: "stuns:stun.l.google.com:19302" },
@@ -184,6 +184,18 @@ const Conference: React.FC<ConferenceProps> = ({
 
             ws.current.send(JSON.stringify(message));
         };
+
+        // ✅ 브라우저 닫기/새로고침 시 exitRoom 전송
+        const handleBeforeUnload = () => {
+            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                const exitMessage = {
+                    eventId: 'exitRoom'
+                };
+                ws.current.send(JSON.stringify(exitMessage));
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
         ws.current.onmessage = (message) => {
             let parsedMessage = JSON.parse(message.data);
@@ -528,6 +540,7 @@ const Conference: React.FC<ConferenceProps> = ({
         };
         
         sendMessage(message);
+        navigate('/');
     }
 
     const userLeft = (request: { sessionId: string }) => {
@@ -559,8 +572,6 @@ const Conference: React.FC<ConferenceProps> = ({
         if (roomLeader.sessionId === sessionId) {
             console.log("⚠️ 방장이 퇴장했습니다. 서버에서 leaderChanged 이벤트가 오기를 대기 중...");
         }
-
-        navigate('/');
     };
 
 
