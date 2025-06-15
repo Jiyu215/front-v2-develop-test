@@ -559,6 +559,8 @@ const Conference: React.FC<ConferenceProps> = ({
         if (roomLeader.sessionId === sessionId) {
             console.log("⚠️ 방장이 퇴장했습니다. 서버에서 leaderChanged 이벤트가 오기를 대기 중...");
         }
+
+        navigate('/');
     };
 
 
