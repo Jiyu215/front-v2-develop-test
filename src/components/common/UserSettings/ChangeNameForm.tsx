@@ -19,7 +19,7 @@ const ChangeNameForm: React.FC<ChangeNameFormProps> = ({ currentName, sessionId,
   return (
     <form onSubmit={handleSubmit} style={{  position: 'fixed',
         top: 50,
-        right: 400,
+        left: 20,
         display: 'flex',
         gap: 8,
         alignItems: 'center',

@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
-export const ParticipantContainer = styled.div`
+export const ParticipantContainer = styled.div<{ isPreview?: boolean }>`
   position: relative;
-  width: 30%;
+  width: ${({ isPreview }) => (isPreview ? '70%' : '30%')};
   aspect-ratio: 16 / 9;
   background-color: #000;
   border-radius: ${({theme}) => theme.borders.radius.md};

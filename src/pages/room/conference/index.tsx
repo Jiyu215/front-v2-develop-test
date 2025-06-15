@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as kurentoUtils from 'kurento-utils';
 import Header from 'components/common/Header';
 import Participant from 'lib/webrtc/Participant';
@@ -16,8 +17,12 @@ import RecordingPermissionPopup from 'components/common/Recording/RecordingPermi
 // import { useScreenRecording } from 'lib/hooks/useRecording';
 
 type ConferenceProps = {
-  name: string;
-  roomId: string;
+    name: string;
+    roomId: string;
+    isVideoOn: boolean;
+    isAudioOn: boolean;
+    videoDeviceId?: string;
+    audioDeviceId?: string;
 };
 
 // User data 타입 정의
@@ -48,11 +53,18 @@ const iceServers = [
     }
 ];
 
-const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
+const Conference: React.FC<ConferenceProps> = ({ 
+        name,
+        roomId,
+        isVideoOn,
+        isAudioOn,
+        videoDeviceId,
+        audioDeviceId 
+    }) => {
 
     //CallControls에서 받는 값
-    const [micOn, setMicOn] = useState(true);
-    const [videoOn, setVideoOn] = useState(true);
+    const [micOn, setMicOn] = useState(isAudioOn);
+    const [videoOn, setVideoOn] = useState(isVideoOn);
 
     const [participantsVisible, setParticipantsVisible] = useState(false);
     const [chatVisible, setChatVisible] = useState(false);
@@ -63,8 +75,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const [recordingPopupVisible, setRecordingPopupVisible] = useState(false);
     const [captionsVisible, setCaptionsVisible] = useState(false);
     const [emotesVisible, setEmotesVisible] = useState(false);
-
-
 
     const handleMicToggle = () => {
         const newMicState = !micOn;
@@ -91,10 +101,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         if(roomLeader.sessionId===userData.sessionId){   
             startRecording();
         }else{
-            sendMessage({
-                eventId:'requestRecordingPermission',
-                sessionId: userData.sessionId
-            });  
+            sendMessage({eventId:'requestRecordingPermission'});  
         }
 
         stopRecording();
@@ -119,6 +126,8 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const handleParticipantsToggle = () => setParticipantsVisible((prev) => !prev);
     const handleEmotesToggle = () => setEmotesVisible((prev) => !prev);
 
+    const navigate = useNavigate();
+
     // 녹화 리스트 팝업 열기/닫기
     const handleRecordingListToggle = () => {
         setRecordingListVisible(prev => !prev);
@@ -138,23 +147,20 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
     const participantsRef = useRef<{ [sessionId: string]: Participant }>({});
     const [roomLeader, setRoomLeader] = useState<{ sessionId: string; username: string }>({ sessionId: '', username: ''});
     const [recordedFiles, setRecordedFiles] = useState<string[]>([]);
-
-    //녹화 중인 사람
-    const [recordingUsers, setRecordingUsers] = useState<string[]>([]);
     const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
+
 
     const [userData, setUserData] = useState<UserData>({
         sessionId: '',
         username: name,
         roomId: roomId,
-        audioOn: true,
-        videoOn: true,
+        audioOn: isAudioOn,
+        videoOn: isVideoOn,
     });
 
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [emojiMessages, setEmojiMessages] = useState<EmojiMessage[]>([]);
     const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
-
     const hasSidebar = chatVisible || participantsVisible;
 
     useEffect(()=>{
@@ -167,13 +173,13 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 eventId: 'joinRoom',
                 username: name,
                 roomId: roomId,
-                audioOn: true,     // 오디오 상태 값
-                videoOn: true,     // 비디오 상태 값
+                audioOn: isAudioOn,     // 오디오 상태 값
+                videoOn: isVideoOn,     // 비디오 상태 값
             }:{
                 eventId: 'createRoom',
                 username: name,
-                audioOn: true,
-                videoOn: true,
+                audioOn: isAudioOn,
+                videoOn: isVideoOn,
             }
 
             ws.current.send(JSON.stringify(message));
@@ -182,6 +188,13 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         ws.current.onmessage = (message) => {
             let parsedMessage = JSON.parse(message.data);
             console.info('Received message: ' + message.data);
+
+            // 에러 메시지 처리
+            if (parsedMessage.type === "ERROR" && parsedMessage.message?.includes("존재하지 않는 방입니다")) {
+                alert(parsedMessage.message);
+                navigate('/');  // useNavigate() 훅으로 이동하세요
+                return; // 이후 처리 중단
+            }
 
             switch (parsedMessage.action) {
                 case 'roomCreated':
@@ -244,15 +257,13 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 
                 //녹화 권한
                 case 'requestRecordingPermission':
-                    setPendingSessionId(parsedMessage.sessionId); // 누가 요청했는지 저장
+                    setPendingSessionId(parsedMessage.sessionId);
                     setRecordingPopupVisible(true);
                     break;
                 case 'grantRecordingPermission':
                     startRecording();
-                    console.log('녹화 권한 수락');
                     break;
                 case 'denyRecordingPermission':
-                    console.log('녹화 권한 취소');
                     break;
                 default:
                     console.error('Unrecognized message', parsedMessage);
@@ -367,8 +378,12 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             sessionId: msg.sessionId,
         }));
 
-        //방코드 채팅에 추가
-        addSystemMessage(`📢 현재 방 코드: ${msg.roomId}`);
+        if (msg.roomId) {
+            addSystemMessage(`📢 현재 방 코드: ${msg.roomId}`);
+        } else if (userData.roomId) {
+            addSystemMessage(`📢 현재 방 코드: ${userData.roomId}`);
+        }
+        
 
         if (!videoRefs.current[msg.sessionId]) {
             videoRefs.current[msg.sessionId] = React.createRef<HTMLVideoElement>();
@@ -610,6 +625,15 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         }
     };
 
+    const addSystemMessage = (content: string) => {
+        setSystemMessages(prev => [
+            ...prev,
+            {
+            content,
+            timestamp: Date.now(),
+            },
+        ]);
+    };
 
     const handleChatMessage = (
         data: {
@@ -680,16 +704,6 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
         setTimeout(() => {
             setEmojiMessages((prev) => prev.filter((m) => m !== emojiMessage));
         }, 3000);
-    };
-
-    const addSystemMessage = (content: string) => {
-        setSystemMessages(prev => [
-            ...prev,
-            {
-            content,
-            timestamp: Date.now(),
-            },
-        ]);
     };
 
     const finalizeRecordingSession = (fileName?: string) => {
@@ -806,6 +820,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             chatMessages={chatMessages}
             currentUserSessionId={userData.sessionId}
             onSendMessage={sendChatMessage}
+            roomId={userData.roomId}
         />
         {emotesVisible && (
             <EmojiPicker
@@ -829,6 +844,7 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
                 hasSidebar={hasSidebar}
             />
         )}
+
         {/* 녹화본 리스트 팝업 */}
         {recordingListVisible && (
         <ListPopup
@@ -872,33 +888,24 @@ const Conference: React.FC<ConferenceProps> = ({ name, roomId }) => {
             popupLeft={45}
         />
         )}
-
         {recordingPopupVisible && (
-            <RecordingPermissionPopup
+            <RecordingPermissionPopup 
                 username={participants[pendingSessionId]?.username || '알 수 없는 사용자'} 
-                onGrant={() => {
-                    setRecordingUsers((prev) =>
-                        prev.includes(pendingSessionId) ? prev : [...prev, pendingSessionId]
-                    );
 
+                onGrant={() => {
                     sendMessage({
                         eventId: 'grantRecordingPermission',
                         sessionId: pendingSessionId
                     });
-
                     setRecordingPopupVisible(false);
                     setPendingSessionId(null);
                 }}
-                onDeny={() => {
-                    setRecordingUsers((prev) =>
-                        prev.filter((id) => id !== pendingSessionId)
-                    );
 
+                onDeny={() => {
                     sendMessage({
                         eventId: 'denyRecordingPermission',
                         sessionId: pendingSessionId
                     });
-
                     setRecordingPopupVisible(false);
                     setPendingSessionId(null);
                 }}

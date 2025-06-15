@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from 'components/common/Button';
 import {
@@ -11,13 +12,14 @@ import {
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [roomId, setRoomId] = useState('');
 
   const handleCreateRoom = () => {
-    navigate('/room', { state: { action: 'create' } });
+    navigate(`/room/${roomId}`, { state: { action: 'create' } });
   };
 
   const handleJoinRoom = () => {
-    navigate('/room', { state: { action: 'join' } });
+    navigate(`/room/${roomId}`, { state: { action: 'join' } });
   };
 
   return (

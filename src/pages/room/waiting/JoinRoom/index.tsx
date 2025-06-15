@@ -5,12 +5,31 @@ import Button from 'components/common/Button';
 import { InputWrapper, LogoImage } from '../Waiting.styles';
 
 type Props = {
-  onJoin: (name: string, roomId: string) => void;
+  name: string;
+  onNameChange: (name: string) => void;
+  roomId: string;
+  onRoomIdChange: (roomId: string) => void;
+
+  settings: {
+    isVideoOn: boolean;
+    isAudioOn: boolean;
+    videoDeviceId?: string;
+    audioDeviceId?: string;
+  };
+  
+  onJoin: (
+    name: string,
+    roomId: string,
+    isVideoOn: boolean,
+    isAudioOn: boolean,
+    videoDeviceId?: string,
+    audioDeviceId?: string
+  ) => void;
+
 };
 
-const JoinRoom: React.FC<Props> = ({ onJoin }) => {
-  const [name, setName] = useState('');
-  const [roomId, setRoomId] = useState('');
+const JoinRoom: React.FC<Props> = ({ name, onNameChange, onRoomIdChange, roomId, settings ,onJoin }) => {
+  // const [roomId, setRoomId] = useState('');
 
   const handleJoin = () => {
     if (!name.trim()) {
@@ -18,7 +37,14 @@ const JoinRoom: React.FC<Props> = ({ onJoin }) => {
       return;
     }
 
-    onJoin(name, roomId);
+    onJoin(
+      name,
+      roomId,
+      settings.isVideoOn,
+      settings.isAudioOn,
+      settings.videoDeviceId,
+      settings.audioDeviceId
+    );
   };
 
   return (
@@ -26,12 +52,12 @@ const JoinRoom: React.FC<Props> = ({ onJoin }) => {
       <LogoImage />
       <Input
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => onNameChange(e.target.value)}
         placeholder="이름을 입력하세요"
       />
       <Input
         value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
+        onChange={(e) => onRoomIdChange(e.target.value)}
         placeholder="방 코드를 입력하세요"
       />
       <Button onClick={handleJoin}>방 참가</Button>

@@ -19,29 +19,25 @@ type Props = {
   isAudioOn: boolean;
   emojiName?: string;
   mySessionId: string;
+  isPreview?: boolean;
 };
 
 const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
-  ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId }, ref) => {
+  ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId, isPreview }, ref) => {
     return (
-      <ParticipantContainer id={sessionId}>
-        {/* {isVideoOn ? ( */}
+      <ParticipantContainer id={sessionId} isPreview={isPreview}>
           <StyledVideo
             id={`video-${sessionId}`}
             ref={ref}
             autoPlay
-            muted={sessionId === mySessionId || !isAudioOn}
+            muted={isPreview ? false : sessionId === mySessionId || !isAudioOn}
             playsInline
             style={{ display: isVideoOn ? 'block' : 'none' }}
           />
-        {/* ) : ( */}
-          {/* <Placeholder>{username.charAt(0).toUpperCase()}</Placeholder> */}
-        {/* )} */}
-        {!isVideoOn && (
-          <Placeholder>
-            {username.charAt(0).toUpperCase()}
-          </Placeholder>
-        )}
+          
+          {!isVideoOn && (
+            <Placeholder>{username.charAt(0).toUpperCase()}</Placeholder>
+          )}
 
         <UsernameOverlay>
           <UsernameContent>

@@ -30,6 +30,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, systemMessage
             {msg.content}
           </div>
         ))}
+
         {chatMessages.map((msg, idx) => (
             <MessageContainer
                 key={idx}
@@ -55,8 +56,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, systemMessage
                 </MessageContent>
             </MessageContainer>
         ))}
-
-        
         </MessageList>
     </MessagesWrapper>
     );
