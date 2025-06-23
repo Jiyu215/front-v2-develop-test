@@ -1,6 +1,7 @@
 import React from 'react';
 import { MessagesWrapper, MessageContainer, Profile, MessageContent, Name, MessageText, MessageList,  MessageMeta, MessageBody, HighlightText } from './ChatMessages.styles';  // 스타일 추가
 import { ChatMessage } from 'types/chat';
+import { getUserColor } from 'lib/color/colorManager';
 
 interface ChatMessagesProps {
     participants: { sessionId: string; username: string }[];
@@ -36,8 +37,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, systemMessage
                 key={idx}
                 isCurrentUser={msg.sessionId === currentUserSessionId}
             >
-                <Profile>
-                    {msg.sessionId === currentUserSessionId ? '나' : msg.from}
+                <Profile bgColor={getUserColor(msg.sessionId)}>
+                    {msg.sessionId === currentUserSessionId ? '나' : msg.from.charAt(0)}
                 </Profile>
                 <MessageContent isCurrentUser={msg.sessionId === currentUserSessionId}>
                     {msg.type === 'private' && (

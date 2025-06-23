@@ -1,18 +1,5 @@
-// components/CopyRoomUrlButton.tsx
 import React from 'react';
-import styled from 'styled-components';
-
-const Button = styled.button`
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid #666;
-  background-color: white;
-  &:hover {
-    background-color: #eee;
-  }
-`;
+import {Button} from './CopyRoomUrlButton.styles';
 
 interface CopyRoomUrlButtonProps {
   roomId: string;

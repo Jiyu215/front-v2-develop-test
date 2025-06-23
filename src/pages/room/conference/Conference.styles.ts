@@ -24,5 +24,16 @@ export const GalleryWrapper = styled.div`
     justify-content: center;
     align-items: center;
     background-color: ${({ theme }) => theme.colors.background.gray};
+    height:100%;
+`;
+
+export const ParticipantVideoGroup = styled.div<{ $cols: number }>`
+  display: grid;
+  grid-template-columns: ${({ $cols }) => `repeat(${Math.max($cols, 1)}, 1fr)`};
+  grid-auto-rows: auto;
+  gap: 16px;
+  width: 90%;
+  justify-items: center;
+  align-items: start;
 `;
 

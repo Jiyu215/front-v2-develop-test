@@ -20,8 +20,8 @@ export const EmojiPickerContainer = styled.div<{ $hasSidebar?: boolean }>`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borders.radius.md};
   padding: ${({ theme }) => `${theme.spacings.sm} ${theme.spacings.md}`};
-  min-width: 20rem;
-  max-width: 28rem;
+  min-width: 12rem;
+  max-width: 16rem;
   max-height: 20rem;
   overflow-y: auto;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
@@ -111,4 +111,32 @@ export const TargetSelector = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.xs};
     background-color: ${({ theme }) => theme.colors.background.gray};
   }
+`;
+
+//손들기, 손내리기
+export const HandRaiseContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items:center;
+`;
+
+export const HandRaiseButton = styled.button`
+  display: flex;
+  justify-content: center;
+  width:100%;
+  align-items:center;
+  background-color: ${({theme})=>theme.colors.background.gray};
+  border: none;
+  padding: ${({theme})=>theme.spacings.xs} 0;
+  border-radius: ${({theme})=>theme.borders.radius.sm};
+  border: ${({ theme }) => `${theme.borders.width} solid ${theme.colors.border}`};
+  font-size: ${({theme})=>theme.fontSizes.xs};
+  cursor: pointer;
+    &:hover {
+      background-color: #d9d9d9;
+    }
+
+    svg{
+      margin-right:${({theme})=>theme.spacings.xs};
+    }
 `;

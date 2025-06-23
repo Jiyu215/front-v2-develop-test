@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   PanelWrapper,
+  SettingsContainer,
   DeviceSection,
+  Title,
   Label,
   Select,
   ToggleRow
@@ -44,8 +46,9 @@ const DeviceSettingsPanel: React.FC<DeviceSettingsPanelProps> = ({ onChange }) =
 
   return (
     <PanelWrapper>
-      <h3>마이크/비디오 설정</h3>
+      <Title>마이크/비디오 설정</Title>
 
+      <SettingsContainer>
       <DeviceSection>
         <Label htmlFor="video-device">카메라 장치</Label>
         <Select id="video-device" onChange={(e) => setSelectedVideo(e.target.value)}>
@@ -89,6 +92,7 @@ const DeviceSettingsPanel: React.FC<DeviceSettingsPanelProps> = ({ onChange }) =
             {isAudioOn ? '오디오 끄기' : '오디오 켜기'}
         </Label>
       </ToggleRow>
+      </SettingsContainer>
     </PanelWrapper>
   );
 };

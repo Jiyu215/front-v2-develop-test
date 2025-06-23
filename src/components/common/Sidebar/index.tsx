@@ -13,15 +13,19 @@ interface SidebarProps {
   currentUserSessionId: string;
   onSendMessage: (input: ChatMessageInput) => void;
   roomId: string;
+  raisedHandSessionIds: string[]; 
+  changeNamePopupVisible: boolean;
+  setChangeNamePopupVisible: (visible: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
     participants,
     participantsVisible, 
     chatVisible, 
-    chatMessages, onSendMessage, systemMessages,
+    chatMessages, onSendMessage, systemMessages, raisedHandSessionIds,
     currentUserSessionId,
-    roomId
+    roomId,
+    changeNamePopupVisible,setChangeNamePopupVisible
  }) => {
     const isOpen = participantsVisible || chatVisible;
 
@@ -29,7 +33,16 @@ const Sidebar: React.FC<SidebarProps> = ({
     <SidebarWrapper isOpen={isOpen}>
         {participantsVisible && (
             <ParticipantsArea>
-                <ParticipantsPanel participants={participants} participantsVisible={participantsVisible} roomId={roomId} />
+                <ParticipantsPanel 
+                    participants={participants} 
+                    participantsVisible={participantsVisible && !chatVisible} 
+                    roomId={roomId} 
+                    raisedHandSessionIds={raisedHandSessionIds} 
+                    currentUserSessionId={currentUserSessionId}
+                    
+                    changeNamePopupVisible={changeNamePopupVisible}
+                    setChangeNamePopupVisible={setChangeNamePopupVisible}
+                />
             </ParticipantsArea>
         )}
         {chatVisible && (
@@ -39,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     systemMessages={systemMessages}
                     participants={participants}
                     onSendMessage={onSendMessage}
-                    participantsVisible={participantsVisible}
+                    chatVisible={chatVisible && !participantsVisible}
                     currentUserSessionId={currentUserSessionId} 
                 />
             </ChatArea>

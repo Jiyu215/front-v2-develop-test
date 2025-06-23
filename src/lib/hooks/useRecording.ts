@@ -1,115 +1,88 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react';
 
-export const useScreenRecording = () => {
-  const [isRecording, setIsRecording] = useState(false);
-  const recordedChunksRef = useRef<BlobPart[]>([]);
+interface UseRecordingOptions {
+  onStop?: (blob: Blob) => void;
+  onError?: (error: Error) => void;
+}
+
+export const useRecording = ({ onStop, onError }: UseRecordingOptions = {}) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const micTrackRef = useRef<MediaStreamTrack | null>(null); // ✅ 마이크 트랙 참조
 
-  const startRecording = async () => {
+  const start = async (micEnabled: boolean) => {
     try {
-      console.log('Start recording requested');
-
-      // 화면+시스템 오디오 스트림 요청
+      // 1. 화면 공유 스트림
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: true, // 시스템 오디오
-      });
-
-      // 마이크 오디오 스트림 요청
-      const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: false,
       });
 
-      // 화면 비디오 트랙 + 시스템 오디오 트랙 + 마이크 오디오 트랙 합치기
+      // 2. 마이크 스트림
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micTrack = micStream.getAudioTracks()[0];
+      micTrack.enabled = micEnabled;
+      console.log("micEnabled",micEnabled);
+      micTrackRef.current = micTrack;
+
+      // 3. 스트림 합치기
       const combinedStream = new MediaStream([
         ...displayStream.getVideoTracks(),
-        ...displayStream.getAudioTracks(),
-        ...audioStream.getAudioTracks(),
+        ...micStream.getAudioTracks(),
       ]);
 
+      // 4. 녹화 시작
+      const recorder = new MediaRecorder(combinedStream);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+        chunksRef.current = [];
+        onStop?.(blob);
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
       streamRef.current = combinedStream;
-
-      recordedChunksRef.current = []; // 녹화 시작 시 초기화
-
-      const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp9' });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-          console.log('ondataavailable event:', event.data.size, 'bytes');
-          console.log('Recorded chunks length:', recordedChunksRef.current.length);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        console.log('Recording stopped');
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach((track) => track.stop());
-          streamRef.current = null;
-        }
-        downloadRecording(); // 자동 다운로드
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      console.log('MediaRecorder started');
     } catch (err) {
-      console.error('Error starting screen recording:', err);
+      if (onError && err instanceof Error) onError(err);
+      else alert('녹화를 시작할 수 없습니다.');
     }
   };
 
-  const stopRecording = () => {
-    console.log('Stop recording requested');
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      console.log('MediaRecorder stop called');
-    } else {
-      console.log('MediaRecorder is not recording');
+  const pause = () => {
+    const r = mediaRecorderRef.current;
+    if (r?.state === 'recording') r.pause();
+  };
+
+  const resume = () => {
+    const r = mediaRecorderRef.current;
+    if (r?.state === 'paused') r.resume();
+  };
+
+  const stop = () => {
+    const r = mediaRecorderRef.current;
+    if (!r) return;
+
+    r.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+
+    mediaRecorderRef.current = null;
+    streamRef.current = null;
+    micTrackRef.current = null;
+  };
+
+  // ✅ 녹화 중 마이크 상태 토글용 함수
+  const setMicEnabled = (enabled: boolean) => {
+    if (micTrackRef.current) {
+      micTrackRef.current.enabled = enabled;
     }
   };
 
-  const downloadRecording = () => {
-    console.log('downloadRecording called');
-    const chunks = recordedChunksRef.current;
-    if (chunks.length === 0) {
-      console.log('No recorded chunks to download');
-      return;
-    }
-
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `screen_recording_${Date.now()}.webm`;
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      console.log('Download link removed');
-    }, 100);
-  };
-
-  // 컴포넌트 언마운트 시 스트림 정리
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        console.log('Cleaned up tracks on unmount');
-      }
-    };
-  }, []);
-
-  return {
-    isRecording,
-    startRecording,
-    stopRecording,
-  };
+  return { start, pause, resume, stop, setMicEnabled };
 };

@@ -11,14 +11,14 @@ interface ChatPanelProps {
   systemMessages: SystemMessage[];
   participants: Participant[];
   currentUserSessionId: string;
-  participantsVisible: boolean;
+  chatVisible: boolean;
   onSendMessage: (input: ChatMessageInput) => void;
 }
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, systemMessages, participants, onSendMessage, currentUserSessionId, participantsVisible }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({ chatMessages, systemMessages, participants, onSendMessage, currentUserSessionId, chatVisible }) => {
 
   return (
-    <PanelWrapper participantsVisible={participantsVisible}>
+    <PanelWrapper chatVisible={chatVisible}>
       <ChatHeader />
       <ChatMessagesWrapper>
         <ChatMessages

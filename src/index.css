@@ -11,3 +11,20 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.main-video {
+  grid-column: 1 / -1; /* 그리드 열 전체 차지 */
+  max-width: 45vw;
+  width: 100%;
+  height: auto;
+  border: 2px solid #2196f3;
+  border-radius: 8px;
+}
+
+.sub-video {
+  grid-column: span 1;
+  width: 100%;
+  max-width: 20vw;
+  height: auto;
+  border-radius: 6px;
+}

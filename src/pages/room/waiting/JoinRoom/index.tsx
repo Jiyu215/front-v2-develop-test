@@ -37,6 +37,11 @@ const JoinRoom: React.FC<Props> = ({ name, onNameChange, onRoomIdChange, roomId,
       return;
     }
 
+    if (!roomId.trim()) {
+      alert('방 코드를 입력해주세요.');
+      return;
+    }
+
     onJoin(
       name,
       roomId,

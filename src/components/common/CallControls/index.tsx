@@ -39,11 +39,16 @@ type CallControlsProps = {
 
     recordingListVisible: boolean;  // 녹화본 리스트 팝업 상태
     setRecordingListVisible: () => void;  // 녹화본 리스트 팝업 열기/닫기 함수
+
+    micListVisible: boolean;
+    setMicListVisible:() => void;
+    videoListVisible:boolean;
+    setVideoListVisible:() => void;
 };
 
 const CallControls: React.FC<CallControlsProps> = ({
-    micOn, setMicOn,
-    videoOn, setVideoOn,
+    micOn, setMicOn, micListVisible, setMicListVisible,
+    videoOn, setVideoOn, videoListVisible, setVideoListVisible,
     screenSharing, setScreenSharing,
     recording, setRecording, recordingListVisible, setRecordingListVisible,
     captionsVisible, setCaptionsVisible,
@@ -64,7 +69,10 @@ const CallControls: React.FC<CallControlsProps> = ({
                         label={micOn ? 'Mute' : 'Unmute'}
                         variant='media'
                     />
-                    <CollapsibleControls active={micOn}/>
+                    <CollapsibleControls 
+                        active={micOn} 
+                        onToggle={setMicListVisible}
+                        isCollapsed={micListVisible}/>
                 </ControlsToggleGroup>
                 <ControlsToggleGroup $active={videoOn}>
                     <CallControlButton
@@ -74,7 +82,9 @@ const CallControls: React.FC<CallControlsProps> = ({
                         label={videoOn ? 'Stop Video' : 'Start Video'}
                         variant='media'
                     />
-                    <CollapsibleControls active={videoOn}/>
+                    <CollapsibleControls active={videoOn}
+                    onToggle={setVideoListVisible}
+                        isCollapsed={videoListVisible}/>
                 </ControlsToggleGroup>
             </MediaControls>
             <InteractionControls>
@@ -107,12 +117,17 @@ const CallControls: React.FC<CallControlsProps> = ({
                         onToggle={setRecordingListVisible}
                         isCollapsed={recordingListVisible}/>
                 </ControlsToggleGroup>
-                <CallControlButton
-                    onClick={setCaptionsVisible}
-                    active={captionsVisible}
-                    icon={<ClosedCaptioningIcon />}
-                    label='Show Captions'
-                />
+
+                {/* 자막기능 off */}
+                {captionsVisible && (
+                    <CallControlButton
+                        onClick={setCaptionsVisible}
+                        active={captionsVisible}
+                        icon={<ClosedCaptioningIcon />}
+                        label='Show Captions'
+                    />
+                )}
+                
                 <CallControlButton
                     onClick={setEmotesVisible}
                     active={emotesVisible}

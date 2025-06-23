@@ -34,7 +34,7 @@ export const MessageContainer = styled.div<{ isCurrentUser: boolean }>`
 `;
 
 // 프로필 이미지나 이름을 포함하는 부분
-export const Profile = styled.div`
+export const Profile = styled.div<{ bgColor: string }>`
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -42,7 +42,7 @@ export const Profile = styled.div`
     width:2.95rem;
     height:2.95rem;
     border-radius: ${({theme})=>theme.borders.radius.round};
-    background-color: ${({ theme }) => theme.colors.primary};
+    background-color: ${({ bgColor }) => bgColor||'gray'};
     color: ${({theme})=>theme.colors.text.inverse};
     font-weight: ${({theme})=>theme.fontWeights.bold};
 `;

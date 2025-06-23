@@ -2,9 +2,9 @@ import styled from 'styled-components';
 
 export const ParticipantContainer = styled.div<{ isPreview?: boolean }>`
   position: relative;
-  width: ${({ isPreview }) => (isPreview ? '70%' : '30%')};
+  width: ${({ isPreview }) => (isPreview && '70%' )};
   aspect-ratio: 16 / 9;
-  background-color: #000;
+  background-color: transparent;
   border-radius: ${({theme}) => theme.borders.radius.md};
   overflow: hidden;
 `;
