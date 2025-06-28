@@ -16,6 +16,7 @@ import RecordingStatusPopup from 'components/common/Recording/RecordingStatusPop
 import ListPopup from 'components/common/ListPopup';
 import RecordingPermissionPopup from 'components/common/Recording/RecordingPermissionPopup';
 import RecordingConsentPopup from 'components/common/Recording/RecordingConsentPopup';
+import RecordingPermissionResultPopup from 'components/common/Recording/RecordingPermissionResultPopup';
 // import { useScreenRecording } from 'lib/hooks/useRecording';
 import { useRecording } from 'lib/hooks/useRecording';
 import { useTopSpeaker } from 'lib/hooks/useTopSpeaker';
@@ -31,6 +32,9 @@ type ConferenceProps = {
     isAudioOn: boolean;
     videoDeviceId?: string;
     audioDeviceId?: string;
+
+    isDarkMode: boolean;
+    toggleDarkMode: () => void;
 };
 
 // User data 타입 정의
@@ -67,7 +71,8 @@ const Conference: React.FC<ConferenceProps> = ({
         isVideoOn,
         isAudioOn,
         videoDeviceId,
-        audioDeviceId 
+        audioDeviceId,
+        isDarkMode, toggleDarkMode
     }) => {
 
     //CallControls에서 받는 값
@@ -97,8 +102,19 @@ const Conference: React.FC<ConferenceProps> = ({
     const [speakingScores, setSpeakingScores] = useState<{ [id: string]: number }>({});
     const [firstSpokenTimestamps, setFirstSpokenTimestamps] = useState<{ [id: string]: number }>({});
 
-    const handleMicListToggle = () => setMicListVisible(prev => !prev);
-  const handleVideoListToggle = () => setVideoListVisible(prev => !prev);
+    const handleMicListToggle = () => {
+        setMicListVisible(prev => {
+            if (!prev) setVideoListVisible(false); // 켜질 때 다른 거 끔
+            return !prev;
+        })  ;
+    };
+
+    const handleVideoListToggle = () => {
+        setVideoListVisible(prev => {
+            if (!prev) setMicListVisible(false); // 켜질 때 다른 거 끔
+            return !prev;
+        });
+    };
   
     const handleSpeakingScoreChange = (sessionId: string, score: number) => {
         setSpeakingScores(prev => {
@@ -117,9 +133,8 @@ const Conference: React.FC<ConferenceProps> = ({
     const topSpeakerRef = useRef(topSpeaker);
     const sortedSpeakerIds = useSortedSpeakers(speakingScores, firstSpokenTimestamps);
 
-    const mainSpeakerId = sortedSpeakerIds[0];
-    const subSpeakerIds = sortedSpeakerIds.slice(1);
 
+    
 
     const handleMicToggle = () => {
         const newMicState = !micOn;
@@ -143,8 +158,14 @@ const Conference: React.FC<ConferenceProps> = ({
 
     // const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
     const [videoTracks, setVideoTracks] = useState<{
-    [id: string]: { video: MediaStreamTrack; audio: MediaStreamTrack };
+        [id: string]: { video: MediaStreamTrack; audio: MediaStreamTrack };
     }>({});
+    
+
+    const [selectedMicId, setSelectedMicId] = useState<string | undefined>(audioDeviceId);
+    const [selectedVideoId, setSelectedVideoId] = useState<string | undefined>(videoDeviceId);
+
+    const displayStreamRef = useRef<MediaStream | null>(null); // 꼭 선언해 주세요
 
     const handleScreenSharingToggle = async () => {
         const participant = participantsRef.current[userData.sessionId];
@@ -157,65 +178,66 @@ const Conference: React.FC<ConferenceProps> = ({
         if (!videoSender || !audioSender) return;
 
         if (!screenSharing) {
-        try {
-            const displayStream = await navigator.mediaDevices.getDisplayMedia({
-            video: true,
-            audio: true,
-            });
+            try {
+                const displayStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true,
+                });
 
-            const micStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            });
+                const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-            const screenTrack = displayStream.getVideoTracks()[0];
-            const micTrack = micStream.getAudioTracks()[0];
+                micStream.getAudioTracks().forEach(track => {
+                    displayStream.addTrack(track);
+                });
 
-            // 기존 트랙을 먼저 저장
-            const prevVideoTrack = videoSender.track;
-            const prevAudioTrack = audioSender.track;
+                displayStreamRef.current = displayStream; // ✅ 저장
 
-            setVideoTracks(prev => ({
-            ...prev,
-            [userData.sessionId]: {
-                video: prevVideoTrack,
-                audio: prevAudioTrack,
+                const screenTrack = displayStream.getVideoTracks()[0];
+                const micTrack = micStream.getAudioTracks()[0];
+
+                const prevVideoTrack = videoSender.track;
+                const prevAudioTrack = audioSender.track;
+
+                setVideoTracks(prev => ({
+                    ...prev,
+                    [userData.sessionId]: {
+                        video: prevVideoTrack,
+                        audio: prevAudioTrack,
+                    }
+                }));
+
+                await videoSender.replaceTrack(screenTrack);
+                await audioSender.replaceTrack(micTrack);
+
+                const localVideoEl = videoRefs.current[userData.sessionId]?.current;
+                if (localVideoEl) localVideoEl.srcObject = displayStream;
+
+                setScreenSharing(true);
+
+                screenTrack.onended = () => {
+                    stopScreenSharing();
+                };
+            } catch (err) {
+                console.error("화면 공유 시작 오류:", err);
             }
-            }));
+        } else {
+            stopScreenSharing();
+        }
 
-            // 트랙 교체
-            await videoSender.replaceTrack(screenTrack);
-            await audioSender.replaceTrack(micTrack);
-
-            // 비디오 엘리먼트에 화면공유 스트림 할당
-            const localVideoEl = videoRefs.current[userData.sessionId]?.current;
-            if (localVideoEl) localVideoEl.srcObject = displayStream;
-
-            setScreenSharing(true);
-
-            screenTrack.onended = async () => {
+        async function stopScreenSharing() {
             const prevTracks = videoTracks[userData.sessionId];
             if (prevTracks?.video) await videoSender.replaceTrack(prevTracks.video);
             if (prevTracks?.audio) await audioSender.replaceTrack(prevTracks.audio);
 
+            const localVideoEl = videoRefs.current[userData.sessionId]?.current;
             if (localVideoEl && localStreamRef.current) {
                 localVideoEl.srcObject = localStreamRef.current;
             }
 
-            setScreenSharing(false);
-            };
-
-            } catch (err) {
-            console.error("화면 공유 시작 오류:", err);
-            }
-        } else {
-            // 🔁 원래 트랙 복구
-            const prevTracks = videoTracks[userData.sessionId];
-            if (prevTracks?.video) await videoSender.replaceTrack(prevTracks.video);
-            if (prevTracks?.audio) await audioSender.replaceTrack(prevTracks.audio);
-
-            const localVideoEl = videoRefs.current[userData.sessionId]?.current;
-            if (localVideoEl && localStreamRef.current) {
-            localVideoEl.srcObject = localStreamRef.current;
+            // ✅ displayStream이 살아 있으면 stop
+            if (displayStreamRef.current) {
+                displayStreamRef.current.getTracks().forEach(track => track.stop());
+                displayStreamRef.current = null;
             }
 
             setScreenSharing(false);
@@ -223,63 +245,75 @@ const Conference: React.FC<ConferenceProps> = ({
     };
 
     const replaceAudioTrack = async (newDeviceId: string) => {
-  const participant = participantsRef.current[userData.sessionId];
-  if (!participant?.rtcPeer) return;
+        const participant = participantsRef.current[userData.sessionId];
+        if (!participant?.rtcPeer) return;
 
-  const audioSender = participant.rtcPeer.peerConnection
-    .getSenders()
-    .find((s) => s.track?.kind === "audio");
+        const audioSender = participant.rtcPeer.peerConnection
+            .getSenders()
+            .find((s) => s.track?.kind === "audio");
 
-  if (!audioSender) return;
+        if (!audioSender) return;
 
-  const newStream = await navigator.mediaDevices.getUserMedia({
-    audio: { deviceId: { exact: newDeviceId } }
-  });
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            audio: { deviceId: { exact: newDeviceId } }
+        });
 
-  const newAudioTrack = newStream.getAudioTracks()[0];
-  await audioSender.replaceTrack(newAudioTrack);
+        const newAudioTrack = newStream.getAudioTracks()[0];
+        await audioSender.replaceTrack(newAudioTrack);
 
-  // 로컬 비디오 스트림에도 반영
-  const localStream = localStreamRef.current;
-  if (localStream) {
-    localStream.removeTrack(localStream.getAudioTracks()[0]);
-    localStream.addTrack(newAudioTrack);
-  }
+        // 로컬 비디오 스트림에도 반영
+        const localStream = localStreamRef.current;
+        if (localStream) {
+            localStream.removeTrack(localStream.getAudioTracks()[0]);
+            localStream.addTrack(newAudioTrack);
+        }
 
-  // UI에서도 듣기 반영
-  const localVideoEl = videoRefs.current[userData.sessionId]?.current;
-  if (localVideoEl) {
-    localVideoEl.srcObject = localStream;
-  }
-};
-const replaceVideoTrack = async (newDeviceId: string) => {
-  const participant = participantsRef.current[userData.sessionId];
-  if (!participant?.rtcPeer) return;
+        // UI에서도 듣기 반영
+        const localVideoEl = videoRefs.current[userData.sessionId]?.current;
+        if (localVideoEl) {
+            localVideoEl.srcObject = localStream;
+        }
+    };
 
-  const videoSender = participant.rtcPeer.peerConnection
-    .getSenders()
-    .find((s) => s.track?.kind === "video");
+    const handleMicDeviceChange = (deviceId: string) => {
+        if (deviceId === selectedMicId) return; // 이미 선택된 장치면 무시
+        setSelectedMicId(deviceId);
+        replaceAudioTrack(deviceId); // 실제 트랙 교체 함수
+    };
+    const replaceVideoTrack = async (newDeviceId: string) => {
+        const participant = participantsRef.current[userData.sessionId];
+        if (!participant?.rtcPeer) return;
 
-  if (!videoSender) return;
+        const videoSender = participant.rtcPeer.peerConnection
+            .getSenders()
+            .find((s) => s.track?.kind === "video");
 
-  const newStream = await navigator.mediaDevices.getUserMedia({
-    video: { deviceId: { exact: newDeviceId } }
-  });
+        if (!videoSender) return;
 
-  const newVideoTrack = newStream.getVideoTracks()[0];
-  await videoSender.replaceTrack(newVideoTrack);
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: newDeviceId } }
+        });
 
-  const localStream = localStreamRef.current;
-  if (localStream) {
-    localStream.removeTrack(localStream.getVideoTracks()[0]);
-    localStream.addTrack(newVideoTrack);
-  }
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        await videoSender.replaceTrack(newVideoTrack);
 
-  const localVideoEl = videoRefs.current[userData.sessionId]?.current;
-  if (localVideoEl) {
-    localVideoEl.srcObject = localStream;
-  }
-};
+        const localStream = localStreamRef.current;
+        if (localStream) {
+            localStream.removeTrack(localStream.getVideoTracks()[0]);
+            localStream.addTrack(newVideoTrack);
+        }
+
+        const localVideoEl = videoRefs.current[userData.sessionId]?.current;
+        if (localVideoEl) {
+            localVideoEl.srcObject = localStream;
+        }
+    };
+
+    const handleVideoDeviceChange = (deviceId: string) => {
+        if (deviceId === selectedVideoId) return; // 중복 방지
+        setSelectedVideoId(deviceId);
+        replaceVideoTrack(deviceId); // 트랙 교체 로직 호출
+    };
 
 
     const handleRecordingToggle = () => {
@@ -290,6 +324,11 @@ const replaceVideoTrack = async (newDeviceId: string) => {
         }
 
         stopRecording();
+    };
+
+    const handleStartRecording = () => {
+        startRecording();
+        setGranted(null);
     };
 
     const startRecording = () => {
@@ -334,6 +373,14 @@ const replaceVideoTrack = async (newDeviceId: string) => {
     const [recordedFiles, setRecordedFiles] = useState<RecordedFile[]>([]);
     const [elapsed, setElapsed] = useState(0); //녹화 시간 저장
     const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
+    const [granted, setGranted] = useState<boolean | null>(null);
+
+
+    
+    const [participantVolumes, setParticipantVolumes] = useState<Record<string, number>>({});
+    const handleVolumeChange = (sessionId: string, newVolume: number) => {
+        setParticipantVolumes(prev => ({ ...prev, [sessionId]: newVolume }));
+    };
 
     //프론트 녹화 함수들
     const { start, stop, pause, resume, setMicEnabled } = useRecording({
@@ -469,11 +516,12 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                 
                 //녹화 기능
                 case 'startRecording': // 녹화 시작
-                    sendMessage({ eventId: 'confirmRecordingConsent' });
                     start(micOnRef.current).then(() => {
                         setRecordingPaused(false); // 타이머 이제 시작 가능
+                        sendMessage({ eventId: 'confirmRecordingConsent' });
                     }).catch((err) => {
                         console.error('녹화 시작 실패:', err);
+                        sendMessage({ eventId: 'stopRecording' });
                     });
                     break;
                 case 'stopRecording': // 녹화 중지
@@ -497,9 +545,10 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                     setRecordingPopupVisible(true);
                     break;
                 case 'grantRecordingPermission':
-                    startRecording();
+                    setGranted(true);
                     break;
                 case 'denyRecordingPermission':
+                    setGranted(false);
                     break;
                 
                 //녹화 동의
@@ -572,6 +621,11 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                 [sender.sessionId]: participant
             }));
 
+            setParticipantVolumes(prev => {
+                if (prev[sender.sessionId] !== undefined) return prev; // 이미 있으면 건너뜀
+                return { ...prev, [sender.sessionId]: 50 };
+            });
+
             setSpeakingScores(prev => ({
                 ...prev,
                 [sender.sessionId]: 0
@@ -633,6 +687,12 @@ const replaceVideoTrack = async (newDeviceId: string) => {
             ...prev,
             [msg.sessionId]: participant
         }));
+
+        setParticipantVolumes(prev => {
+            if (prev[msg.sessionId] !== undefined) return prev; // 이미 있으면 건너뜀
+            return { ...prev, [msg.sessionId]: 50 };
+        });
+
 
         setSpeakingScores(prev => ({
             ...prev,
@@ -1008,13 +1068,9 @@ const replaceVideoTrack = async (newDeviceId: string) => {
         }, 3000);
     };
 
-    const finalizeRecordingSession = (/*fileName?: string*/) => {
+    const finalizeRecordingSession = () => {
         setRecording(false);
         setRecordingPaused(false);
-
-        // if (fileName?.trim()) {
-        //     setRecordedFiles(prev => [...prev, fileName]);
-        // }
     };
 
     useEffect(() => {
@@ -1059,7 +1115,11 @@ const replaceVideoTrack = async (newDeviceId: string) => {
     return (
     <Wrapper>
         <MainArea>
-            <Header variant="compact" />
+            <Header 
+                variant="compact" 
+                isDarkMode={isDarkMode}
+                toggleDarkMode={toggleDarkMode}
+            />
             <GalleryWrapper>
                 {/* {sortedSpeakerIds.map((sessionId) => {
                     const participant = participants[sessionId];
@@ -1085,10 +1145,12 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                 })} */}
                 <ParticipantVideoGroup $cols={sortedSpeakerIds.length-1}>
                 {sortedSpeakerIds.map((sessionId, index) => {
+                    
                     const participant = participants[sessionId];
                     if (!participant) return null;
 
                     const isMain = index === 0;
+                    const volume = participantVolumes[sessionId]??50;
 
                     return (
                     <ParticipantVideo
@@ -1097,11 +1159,13 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                         username={participant.username}
                         isVideoOn={participant.videoOn}
                         isAudioOn={participant.audioOn}
+                        
                         ref={videoRefs.current[sessionId]}
                         mySessionId={userData.sessionId}
                         emojiName={emojiMessages.find(msg => msg.sessionId === sessionId)?.emoji}
                         onSpeakingScoreChange={(score) => handleSpeakingScoreChange(sessionId, score)}
                         className={isMain ? 'main-video' : 'sub-video'} // ⬅️ 스타일 구분
+                        volume={volume}
                     />
                     );
                 })}
@@ -1181,10 +1245,14 @@ const replaceVideoTrack = async (newDeviceId: string) => {
             currentUserSessionId={userData.sessionId}
             onSendMessage={sendChatMessage}
             roomId={userData.roomId}
+            roomLeaderSessionId={roomLeader.sessionId}
             raisedHandSessionIds={raisedHandSessionIds}
 
             changeNamePopupVisible={changeNamePopupVisible}
             setChangeNamePopupVisible={setChangeNamePopupVisible}
+
+            participantVolumes={participantVolumes}
+            onVolumeChange={handleVolumeChange}
         />
         {emotesVisible && (
             <EmojiPicker
@@ -1333,8 +1401,26 @@ const replaceVideoTrack = async (newDeviceId: string) => {
                 }}
             />
         )}
-        {micListVisible&&(<AudioInputSelector onDeviceChange={replaceAudioTrack} />)}
-        {videoListVisible&&(<VideoInputSelector onDeviceChange={replaceVideoTrack} />)}
+
+        {granted !== null && (
+            <RecordingPermissionResultPopup
+                granted={granted}
+                onClose={() => setGranted(null)}
+                onStartRecording={handleStartRecording}
+            />
+        )}
+        {micListVisible&&(
+            <AudioInputSelector
+                onDeviceChange={handleMicDeviceChange}
+                selectedDeviceId={selectedMicId}
+            />
+        )}
+        {videoListVisible&&(
+            <VideoInputSelector
+                onDeviceChange={handleVideoDeviceChange}
+                selectedDeviceId={selectedVideoId}
+            />
+        )}
     </Wrapper>
     );
 };

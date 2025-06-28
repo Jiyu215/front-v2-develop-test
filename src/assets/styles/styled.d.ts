@@ -2,12 +2,15 @@ import 'styled-components'
 
 declare module 'styled-components' {
   export interface DefaultTheme {
+     mode: string;
      colors: {
         primary: string;
         point: string;
         background: {
             light: string;
             gray: string;
+            grayLight: string;
+            inverse: string;
         };
         text: {
             default: string;       
@@ -27,6 +30,14 @@ declare module 'styled-components' {
             on: string;
             off: string;
         };
+        chat: {
+            background: string;
+            input: string;
+            bubble: string;
+            bubbleSelf: string;
+            name: string;
+        };
+        hover:string;
     };
     fontSizes: {
         xxs: string;

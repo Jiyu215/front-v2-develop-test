@@ -1,43 +1,25 @@
 import React, { useState, useRef } from "react";
-import { DropdownContainer, Selected, OptionsList, Option } from "./Dropdown.styles";
-
-interface DropdownOption {
-  [key: string]: any;
-}
-
-interface DropdownProps {
-  options: DropdownOption[];
-  onChange: (option: DropdownOption) => void;
-  placeholder?: string;
-  labelKey?: string;
-  valueKey?: string;
-  initialValue?: DropdownOption;
-}
+import { DropdownContainer } from "./Dropdown.styles";
+import DropdownSelected from "./DropdownSelected";
+import DropdownOptionList from "./DropdownOptionList";
+import { DropdownProps,DropdownOption  } from "types/dropdown";
 
 const Dropdown: React.FC<DropdownProps> = ({
   options,
   onChange,
+  value,
   placeholder = "선택하세요",
   labelKey = "label",
   valueKey = "value",
-  initialValue
+  title = "선택 항목",
 }) => {
-  const [selected, setSelected] = useState<DropdownOption | null>(initialValue ?? null);
   const [isHovered, setIsHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const handleOptionClick = (option: DropdownOption) => {
-    setSelected(option);
-    onChange(option);
-  };
-
-  const getLabel = (option: DropdownOption | null) => {
+  const getLabel = (option: DropdownOption | null | undefined) => {
     if (!option) return placeholder;
     return option[labelKey] ?? String(option);
   };
-
-  const isSelected = (option: DropdownOption) =>
-    selected && selected[valueKey] === option[valueKey];
 
   return (
     <DropdownContainer
@@ -45,25 +27,19 @@ const Dropdown: React.FC<DropdownProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Selected $isHovered={isHovered}>
-        녹음 장치 <br/>
-      <span>{getLabel(selected)}</span>
-      </Selected>
-      <OptionsList $isVisible={isHovered}>
-        {options.map(option => (
-          <Option
-            key={option[valueKey] ?? option[labelKey] ?? option}
-            onClick={() => handleOptionClick(option)}
-          >
-            <input
-              type="radio"
-              checked={isSelected(option)}
-              readOnly
-            />
-            <span>{option[labelKey] ?? String(option)}</span>
-          </Option>
-        ))}
-      </OptionsList>
+      <DropdownSelected
+        isHovered={isHovered}
+        label={getLabel(value)}
+        title={title}
+      />
+      <DropdownOptionList
+        options={options}
+        value={value}
+        onChange={onChange}
+        labelKey={labelKey}
+        valueKey={valueKey}
+        isVisible={isHovered}
+      />
     </DropdownContainer>
   );
 };

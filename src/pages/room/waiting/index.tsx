@@ -7,11 +7,14 @@ import VideoPreviewPanel from './VideoPreviewPanel';
 import DeviceSettingsPanel from './DeviceSettingsPanel';
 import { Wrapper, WaitingWrapper, RoomActionWrapper, PreviewWapper } from './Waiting.styles';
 
+
 type Props = {
   isRoom: (name: string, roomId: string, isVideoOn: boolean, isAudioOn: boolean, videoDeviceId?: string, audioDeviceId?: string) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 };
 
-const Waiting: React.FC<Props> = ({ isRoom }) => {
+const Waiting: React.FC<Props> = ({ isRoom, isDarkMode, toggleDarkMode }) => {
     const location = useLocation();
     const { roomId: paramRoomId } = useParams<{ roomId: string }>();
     const [roomId, setRoomId] = useState(paramRoomId || '');
@@ -40,7 +43,10 @@ const Waiting: React.FC<Props> = ({ isRoom }) => {
 
     return (
     <Wrapper>
-        <Header />
+        <Header 
+            isDarkMode={isDarkMode}
+            toggleDarkMode={toggleDarkMode}
+        />
         <WaitingWrapper>
         <RoomActionWrapper>
             {action === 'create' ? (

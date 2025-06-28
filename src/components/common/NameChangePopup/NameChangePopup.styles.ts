@@ -40,10 +40,12 @@ export const Input = styled.input`
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({theme})=>theme.borders.radius.sm};
     margin-bottom: ${({theme})=>theme.spacings.sm};
+    color: ${({theme})=>theme.colors.text.default};
+    background-color: ${({ theme }) => theme.colors.background.light};
 
     &:focus {
-        outline: none;
-        border-color: ${({ theme }) => theme.colors.primary};
+      outline: none;
+      border-color: ${({ theme }) => theme.colors.primary};
     }
 `;
 
@@ -66,14 +68,14 @@ export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     variant === 'primary'
       ? `
     background-color: #5F9DF7;
-    color: white;
+    color: #FFFFFF !important;
 
     &:hover {
       background-color: ${theme.colors.primary};
     }
   `
       : `
-    background-color: ${theme.colors.background.gray};
+    background-color: ${theme.colors.background.grayLight};
     color: ${theme.colors.text.default};
 
     &:hover {

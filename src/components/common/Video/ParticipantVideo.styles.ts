@@ -1,11 +1,14 @@
 import styled from 'styled-components';
 
-export const ParticipantContainer = styled.div<{ isPreview?: boolean }>`
+export const ParticipantContainer = styled.div<{ isPreview?: boolean, isSpeaking?: boolean }>`
   position: relative;
   width: ${({ isPreview }) => (isPreview && '70%' )};
+  min-width: 220px;
   aspect-ratio: 16 / 9;
   background-color: transparent;
   border-radius: ${({theme}) => theme.borders.radius.md};
+  border: 3px solid;
+  border-color: ${({ isSpeaking }) => (isSpeaking ? '#00ff3c' : 'transparent')};
   overflow: hidden;
 `;
 
@@ -15,15 +18,26 @@ export const StyledVideo = styled.video`
   object-fit: cover;
 `;
 
-export const Placeholder = styled.div`
+export const Placeholder = styled.div<{ isPreview?: boolean, bgColor?: string }>`
   width: 100%;
   height: 100%;
   background-color: #444;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
   color: white;
+
+  span{
+    display: inline-flex;
+    background-color:${({ bgColor }) => bgColor || '#444'};
+    aspect-ratio: 1 / 1;
+    width: 20%;
+    border-radius:${({theme})=>theme.borders.radius.round};
+    align-items: center;
+    justify-content: center;
+    font-size: ${({ isPreview, theme }) => (isPreview && theme.fontSizes.xl )};
+    overflow: hidden;
+  }
 `;
 
 export const UsernameOverlay = styled.div`

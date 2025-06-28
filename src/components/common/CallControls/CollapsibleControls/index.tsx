@@ -5,7 +5,9 @@ import {
   ChevronIcon,
 } from './CollapsibleControls.styles';
 
-import { DownIcon, UpIcon } from 'assets/icons/black';
+// import { DownIcon, UpIcon } from 'assets/icons/black';
+
+import { useIconSet } from 'lib/hooks/useIconSet';
 
 interface CollapsibleControlsProps {
   active?: boolean;
@@ -14,6 +16,7 @@ interface CollapsibleControlsProps {
 }
 
 const CollapsibleControls: React.FC<CollapsibleControlsProps> = ({ active, isCollapsed, onToggle }) => {
+  const {DownIcon, UpIcon} = useIconSet();
 
   return (
     <Wrapper>

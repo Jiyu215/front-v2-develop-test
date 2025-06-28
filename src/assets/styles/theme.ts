@@ -1,12 +1,15 @@
 import { DefaultTheme } from 'styled-components'
 
 export const theme: DefaultTheme = {
+  mode: 'light',
   colors: {
     primary: '#4A7AFF',          // 브랜드 메인 색상 (파란색)
     point: '#E1F5FF',            // point color
     background: {
       light: '#ffffff',          // 기본 배경 색상 (흰색)
       gray: '#F1F0F0',           // 섹션/비디오 영역 등
+      grayLight: '#F6F6F6',
+      inverse: '#1A1A1A',
     },
     text: {
       default: '#121212',        // 일반 텍스트
@@ -26,6 +29,14 @@ export const theme: DefaultTheme = {
       on: '#121212',
       off: '#ff4d4f'
     },
+    chat: {
+      background: '#FFFFFF', // 채팅 전체 영역
+      input: '#F6F6F6',       // 입력창 배경
+      bubble: '#FFFFFF',      // 상대 메시지 말풍선
+      bubbleSelf: '#E1F5FF',  // 본인 메시지 말풍선
+      name: '#8A8A8A',
+    },
+    hover:'#f7f7f7',
   },
   fontSizes: {
     xxs: '0.75rem',

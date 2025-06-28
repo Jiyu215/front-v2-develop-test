@@ -26,6 +26,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatMessages, systemMessage
               fontStyle: 'italic',
               color: '#888',
               margin: '8px 0',
+              fontSize: '12px',
             }}
           >
             {msg.content}

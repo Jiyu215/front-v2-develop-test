@@ -133,7 +133,7 @@ export const HandRaiseButton = styled.button`
   font-size: ${({theme})=>theme.fontSizes.xs};
   cursor: pointer;
     &:hover {
-      background-color: #d9d9d9;
+      background-color: ${({theme})=>theme.colors.hover};
     }
 
     svg{

@@ -44,12 +44,13 @@ export const Input = styled.input`
   outline: none;
   font-size: ${({theme})=>theme.fontSizes.xs};
   background-color: transparent;
+  color: ${({theme})=>theme.colors.text.default};
 `;
 
 export const SendButton = styled.button`
     padding: 0 ${({theme})=>theme.spacings.sm};
     background-color: ${({ theme }) => theme.colors.primary};
-    color: #fff;
+    color: #FFFFFF !important;
     border: none;
     height: 100%;
     font-weight: ${({theme})=>theme.fontWeights.medium};

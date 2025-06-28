@@ -6,7 +6,7 @@ import {
   ControlButton,
 } from './RecordingStatusPopup.styles';
 
-import { Play, Stop, Pause, RecordIcon } from 'assets/icons/white';
+import { useReversedIconSet } from 'lib/hooks/useReversedIconSet';
 
 interface RecordingStatusPopupProps {
   isPaused: boolean;
@@ -25,17 +25,18 @@ const RecordingStatusPopup: React.FC<RecordingStatusPopupProps> = ({
   onResume,
   onStop
 }) => {
+  const { Play, Stop, Pause, RecordIcon } = useReversedIconSet();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number | null>(null); // ⏱️ 기준 시간 저장
 
-const startTimer = () => {
-  timerRef.current = setInterval(() => {
-    if (startTimeRef.current !== null) {
-      const diff = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      setElapsed(diff);
-    }
-  }, 1000);
-};
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      if (startTimeRef.current !== null) {
+        const diff = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setElapsed(diff);
+      }
+    }, 1000);
+  };
 
 
   const stopTimer = () => {

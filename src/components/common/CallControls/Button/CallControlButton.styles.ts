@@ -17,9 +17,9 @@ export const StyledButton = styled.button<{ $active?: boolean; disabled?: boolea
 
   background-color: ${({ $active, theme, variant }) => {
     if (variant === 'media') {
-      return $active ? theme.colors.background.light : '#E8E8E8'; // 'media'에서는 클릭 시 배경색 변화
+      return $active ? theme.colors.background.light : theme.colors.background.gray; // 'media'에서는 클릭 시 배경색 변화
     }else{
-      return $active ?  '#E8E8E8' : theme.colors.background.light; // 'interaction'에서 클릭 시 배경색 변화
+      return $active ?  theme.colors.background.gray : theme.colors.background.light; // 'interaction'에서 클릭 시 배경색 변화
     }
   }};
 
@@ -27,7 +27,7 @@ export const StyledButton = styled.button<{ $active?: boolean; disabled?: boolea
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
 
   &:hover {
-    background-color: #F1F0F0;
+    background-color: ${({theme})=>theme.colors.hover};
   }
 `;
 

@@ -5,7 +5,8 @@ export const PanelWrapper = styled.div<{ chatVisible: boolean }>`
   display: flex;
   flex-direction: column;
   border-bottom: ${({theme})=>theme.borders.width} solid ${({ theme }) => theme.colors.border};
-  height: ${({ chatVisible }) => chatVisible ? '100vh':'70vh'};
+  // height:100%;
+  height: ${({ chatVisible }) => chatVisible ? '100vh':'60vh'};
 `;
 
 export const ChatMessagesWrapper = styled.div`

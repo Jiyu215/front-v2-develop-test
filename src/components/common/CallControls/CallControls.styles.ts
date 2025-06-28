@@ -29,7 +29,7 @@ export const ControlsToggleGroup = styled.div<{ $active?: boolean }>`
     height:100%;
 
     background-color: ${({ $active, theme }) =>
-    $active ? theme.colors.background.light : '#E8E8E8'};
+        $active ? theme.colors.background.light : theme.colors.background.gray};
 
     & > * {
         background: transparent;
@@ -41,5 +41,9 @@ export const SystemControls = styled.div`
     height:100%;
     width:8%;
     padding:0 1%;
+
+    button{
+        color: #FFFFFF !important;
+    }
 `;
 

@@ -5,11 +5,11 @@ export const PopupContainer = styled.div`
   display: flex;
   top: 1rem;
   right: 1rem;
-  background-color: #1E1E1E;
+  background-color: ${({theme})=>theme.colors.background.inverse};
   color: ${({ theme }) => theme.colors.background.light};
   padding: ${({theme})=> theme.spacings.xs };
   border-radius: ${({ theme }) => theme.borders.radius.sm};
-  z-index: 1000;
+  z-index: 1000;  
 `;
 
 export const PopupHeader = styled.div`
@@ -46,7 +46,7 @@ export const ControlButton = styled.button`
 
     padding:0 0.15rem;
     &:hover {
-        background-color: #494949;
+        background-color: ${({theme})=>theme.colors.mediaControl.off};
     }
 
     svg {

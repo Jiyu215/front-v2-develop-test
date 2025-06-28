@@ -10,10 +10,11 @@ import {
 
 import EmojiEffects from '../EmojiEffects';
 
-import { MicOffIcon } from 'assets/icons/white';
-
 import useVoiceActivityDetection from 'lib/hooks/useVoiceActivityDetection';
 import useSpeakingScore from 'lib/hooks/useSpeakingScore';
+
+import { getUserColor } from 'lib/color/colorManager';
+import { useIconSet } from 'lib/hooks/useIconSet';
 
 type Props = {
   sessionId: string;
@@ -25,11 +26,14 @@ type Props = {
   isPreview?: boolean;
   className?: string;
   onSpeakingScoreChange?: (score: number) => void;
+
+  volume?: number;
 };
 
 const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
-  ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId, isPreview, onSpeakingScoreChange, className }, ref) => {
+  ({ sessionId, username, isVideoOn, isAudioOn, emojiName, mySessionId, isPreview, onSpeakingScoreChange, className, volume }, ref) => {
 
+    const { RedMicOffIcon } = useIconSet();
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
     useEffect(() => {
@@ -56,6 +60,18 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
       };
     }, [ref]);
 
+    useEffect(() => {
+      const video = (ref as React.RefObject<HTMLVideoElement>)?.current;
+      if (video) {
+        const vol = Number(volume);
+        if (!isNaN(vol) && isFinite(vol) && vol >= 0 && vol <= 100) {
+          video.volume = vol / 100;
+        } else {
+          video.volume = 0.5; // 기본값 설정 (예: 50%)
+        }
+      }
+    }, [volume, ref]);
+
 
     const isSpeaking = useVoiceActivityDetection(mediaStream, isAudioOn);
     const speakingScore = useSpeakingScore(isSpeaking);
@@ -67,11 +83,7 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
     }, [speakingScore, onSpeakingScoreChange]);
 
     return (
-      <ParticipantContainer id={sessionId} isPreview={isPreview} className={className} 
-      style={{
-        border: '3px solid',
-        borderColor: isSpeaking ? '#00ff3c' : 'transparent'
-      }}>
+      <ParticipantContainer id={sessionId} isPreview={isPreview} className={className} isSpeaking={isSpeaking}>
           <StyledVideo
             id={`video-${sessionId}`}
             ref={ref}
@@ -82,14 +94,16 @@ const ParticipantVideo = forwardRef<HTMLVideoElement, Props>(
           />
           
           {!isVideoOn && (
-            <Placeholder>{username.charAt(0).toUpperCase()}</Placeholder>
+            <Placeholder bgColor={getUserColor(sessionId)} isPreview={isPreview}>
+              <span>{username.charAt(0).toUpperCase()}</span>
+            </Placeholder>
           )}
 
         <UsernameOverlay>
           <UsernameContent>
             {!isAudioOn && (
               <Icon>
-                <MicOffIcon />
+                <RedMicOffIcon />
               </Icon>
             )}
             {username}

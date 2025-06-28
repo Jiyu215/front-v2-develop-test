@@ -6,10 +6,10 @@ export const Button = styled.button`
     font-size: ${({theme})=>theme.fontSizes.xxs};
     cursor: pointer;
     border-radius: 4px;
-    border: 1px solid ${({theme})=>theme.colors.background.gray};
+    border: 1px solid ${({theme})=>theme.colors.border};
     background-color: ${({theme})=>theme.colors.background.light};
     
     &:hover {
-    background-color: #eee;
+        background-color: ${({theme})=>theme.colors.hover};
     }
 `;

@@ -4,6 +4,11 @@ import * as kurentoUtils from 'kurento-utils';
 import Waiting from "pages/room/waiting";
 import Conference from "pages/room/conference";
 
+
+import { theme } from 'assets/styles/theme';
+import { darkTheme } from 'assets/styles/darkTheme';
+import { ThemeProvider } from "styled-components";
+
 const Room: React.FC = () => {
     const { roomId: urlRoomId } = useParams();
 
@@ -14,6 +19,9 @@ const Room: React.FC = () => {
     const [isAudioOn, setIsAudioOn] = useState(true);
     const [videoDeviceId, setVideoDeviceId] = useState('');
     const [audioDeviceId, setAudioDeviceId] = useState('');
+
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
     const handleJoin = (
         name: string,
@@ -33,9 +41,14 @@ const Room: React.FC = () => {
     };
 
     return(
-        <>
+        <ThemeProvider theme={isDarkMode ? darkTheme : theme}>
         {!joined ? (
-            <Waiting isRoom={handleJoin} />
+            <Waiting 
+                
+                isRoom={handleJoin} 
+                isDarkMode={isDarkMode}
+                toggleDarkMode={toggleDarkMode}
+            />
         ) : (
             <Conference 
                 name={userName}
@@ -43,9 +56,12 @@ const Room: React.FC = () => {
                 isVideoOn={isVideoOn}
                 isAudioOn={isAudioOn}
                 videoDeviceId={videoDeviceId}
-                audioDeviceId={audioDeviceId}/>
+                audioDeviceId={audioDeviceId}
+                isDarkMode={isDarkMode}
+                toggleDarkMode={toggleDarkMode}
+            />
         )}
-        </>
+        </ThemeProvider>
     ); 
 }
 

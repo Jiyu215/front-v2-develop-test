@@ -12,10 +12,10 @@ export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
 `;
 
 export const ChatArea = styled.div`
-  flex: 3;
+  flex: 0.7;
 `;
 
 export const ParticipantsArea = styled.div`
-  flex: 1;
+  flex: 0.3;
   border-bottom: ${({theme})=>theme.borders.width} solid ${({ theme }) => theme.colors.border};
 `;

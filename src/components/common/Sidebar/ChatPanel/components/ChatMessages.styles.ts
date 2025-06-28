@@ -43,7 +43,7 @@ export const Profile = styled.div<{ bgColor: string }>`
     height:2.95rem;
     border-radius: ${({theme})=>theme.borders.radius.round};
     background-color: ${({ bgColor }) => bgColor||'gray'};
-    color: ${({theme})=>theme.colors.text.inverse};
+    color: #FFFFFF;
     font-weight: ${({theme})=>theme.fontWeights.bold};
 `;
 
@@ -59,7 +59,7 @@ export const MessageContent = styled.div<{ isCurrentUser: boolean }>`
 // 이름을 스타일링하는 부분
 export const Name = styled.strong`
     font-size: ${({theme})=>theme.fontSizes.xxs};
-    color: ${({theme})=>theme.colors.text.muted};
+    color: ${({theme})=>theme.colors.chat.name};
 `;
 
 export const MessageText = styled.p`
@@ -77,7 +77,7 @@ export const MessageBody = styled.div<{ isCurrentUser: boolean }>`
     border-radius: ${({theme})=>theme.borders.radius.md};
     align-items: ${({isCurrentUser}) => (isCurrentUser ? 'flex-end' : 'flex-start')};
     border: 1px solid ${({isCurrentUser, theme}) => (isCurrentUser ? theme.colors.point : theme.colors.background.gray)};
-    background-color: ${({isCurrentUser, theme}) => (isCurrentUser ? theme.colors.point : theme.colors.background.light)};
+    background-color: ${({isCurrentUser, theme}) => (isCurrentUser ? theme.colors.chat.bubbleSelf : theme.colors.chat.bubble)};
 `;
 
 export const MessageMeta = styled.div`

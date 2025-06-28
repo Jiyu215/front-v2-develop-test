@@ -19,6 +19,7 @@ code {
   height: auto;
   border: 2px solid #2196f3;
   border-radius: 8px;
+  font-size: 3rem;
 }
 
 .sub-video {
@@ -27,4 +28,5 @@ code {
   max-width: 20vw;
   height: auto;
   border-radius: 6px;
+  font-size: 1.5rem;
 }

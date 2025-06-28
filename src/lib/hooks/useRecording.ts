@@ -11,13 +11,15 @@ export const useRecording = ({ onStop, onError }: UseRecordingOptions = {}) => {
   const chunksRef = useRef<Blob[]>([]);
   const micTrackRef = useRef<MediaStreamTrack | null>(null); // ✅ 마이크 트랙 참조
 
-  const start = async (micEnabled: boolean) => {
+  const start = async (micEnabled: boolean, onConsentConfirmed?: () => void) => {
     try {
       // 1. 화면 공유 스트림
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: true,
       });
+
+      onConsentConfirmed?.();
 
       // 2. 마이크 스트림
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -50,8 +52,8 @@ export const useRecording = ({ onStop, onError }: UseRecordingOptions = {}) => {
       mediaRecorderRef.current = recorder;
       streamRef.current = combinedStream;
     } catch (err) {
-      if (onError && err instanceof Error) onError(err);
-      else alert('녹화를 시작할 수 없습니다.');
+      stop();
+      throw err;
     }
   };
 

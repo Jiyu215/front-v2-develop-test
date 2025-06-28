@@ -29,11 +29,22 @@ const DeviceSettingsPanel: React.FC<DeviceSettingsPanelProps> = ({ onChange }) =
   const [selectedAudio, setSelectedAudio] = useState<string | undefined>();
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(devices => {
-      setVideoDevices(devices.filter(d => d.kind === 'videoinput'));
-      setAudioDevices(devices.filter(d => d.kind === 'audioinput'));
-    });
-  }, []);
+  navigator.mediaDevices.enumerateDevices().then(devices => {
+    const videoList = devices.filter(d => d.kind === 'videoinput');
+    const audioList = devices.filter(d => d.kind === 'audioinput');
+
+    setVideoDevices(videoList);
+    setAudioDevices(audioList);
+
+    // 초기 선택값이 없으면 가장 첫 번째 장치로 설정
+    if (!selectedVideo && videoList.length > 0) {
+      setSelectedVideo(videoList[0].deviceId);
+    }
+    if (!selectedAudio && audioList.length > 0) {
+      setSelectedAudio(audioList[0].deviceId);
+    }
+  });
+}, []);
 
   useEffect(() => {
     onChange({
@@ -51,7 +62,10 @@ const DeviceSettingsPanel: React.FC<DeviceSettingsPanelProps> = ({ onChange }) =
       <SettingsContainer>
       <DeviceSection>
         <Label htmlFor="video-device">카메라 장치</Label>
-        <Select id="video-device" onChange={(e) => setSelectedVideo(e.target.value)}>
+        <Select 
+        id="video-device" 
+        value={selectedVideo || ''}
+        onChange={(e) => setSelectedVideo(e.target.value)}>
           {videoDevices.map(device => (
             <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
           ))}
@@ -60,7 +74,10 @@ const DeviceSettingsPanel: React.FC<DeviceSettingsPanelProps> = ({ onChange }) =
 
       <DeviceSection>
         <Label htmlFor="audio-device">마이크 장치</Label>
-        <Select id="audio-device" onChange={(e) => setSelectedAudio(e.target.value)}>
+        <Select 
+          id="audio-device" 
+          value={selectedAudio || ''}
+          onChange={(e) => setSelectedAudio(e.target.value)}>
           {audioDevices.map(device => (
             <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
           ))}

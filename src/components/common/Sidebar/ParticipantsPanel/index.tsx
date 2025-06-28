@@ -11,9 +11,13 @@ interface Props {
   participantsVisible: boolean;
   roomId: string;
   currentUserSessionId: string;
+  roomLeaderSessionId: string;
   raisedHandSessionIds: string[];
   changeNamePopupVisible: boolean;
   setChangeNamePopupVisible: (visible: boolean) => void;
+
+  participantVolumes: Record<string, number>;
+  onVolumeChange: (sessionId: string, volume: number) => void;
 }
 
 const ParticipantsPanel: React.FC<Props> = ({
@@ -21,8 +25,10 @@ const ParticipantsPanel: React.FC<Props> = ({
   participantsVisible,
   roomId,
   currentUserSessionId,
+  roomLeaderSessionId,
   raisedHandSessionIds,
-  changeNamePopupVisible,setChangeNamePopupVisible
+  changeNamePopupVisible,setChangeNamePopupVisible,
+  participantVolumes, onVolumeChange
 }) => {
   // 현재 유저
   const currentUser = participants.find(p => p.sessionId === currentUserSessionId);
@@ -30,18 +36,24 @@ const ParticipantsPanel: React.FC<Props> = ({
   // 본인 제외한 나머지
   const others = participants.filter(p => p.sessionId !== currentUserSessionId);
 
-  // 손든 사람 (본인 제외)
-  const raisedHands = others.filter(p => raisedHandSessionIds.includes(p.sessionId));
+  // 본인 제외한 나머지 중 방장
+  const othersExceptRoomLeader = others.filter(p => p.sessionId !== roomLeaderSessionId);
+  const roomLeader = participants.find(p => p.sessionId === roomLeaderSessionId);
 
-  // 손 안든 사람
-  const notRaised = others.filter(p => !raisedHandSessionIds.includes(p.sessionId));
+  // 손든 사람 (본인 제외, 방장 제외)
+  const raisedHands = othersExceptRoomLeader.filter(p => raisedHandSessionIds.includes(p.sessionId));
 
-  // 최종 정렬: 나 → 손든 사람 → 그 외
+  // 손 안든 사람 (본인 제외, 방장 제외)
+  const notRaised = othersExceptRoomLeader.filter(p => !raisedHandSessionIds.includes(p.sessionId));
+
+  // 최종 정렬: 나 → 방장 → 손든 사람 → 그 외
   const sortedParticipants = [
     ...(currentUser ? [currentUser] : []),
+    ...(roomLeader && roomLeader.sessionId !== currentUserSessionId ? [roomLeader] : []),
     ...raisedHands,
     ...notRaised,
   ];
+
 
   return (
     <PanelWrapper participantsVisible={participantsVisible}>
@@ -53,6 +65,11 @@ const ParticipantsPanel: React.FC<Props> = ({
             isCurrentUser={participant.sessionId === currentUserSessionId}
             participant={participant} 
             isHandRaised={raisedHandSessionIds.includes(participant.sessionId)}
+            isRoomLeader={participant.sessionId === roomLeaderSessionId}
+            isCurrentUserRoomLeader={currentUserSessionId === roomLeaderSessionId}
+
+            volume={participantVolumes[participant.sessionId] ?? 50}
+            onVolumeChange={(volume) => onVolumeChange(participant.sessionId, volume)}
           />
         ))}
       </ParticipantsList>

@@ -8,15 +8,18 @@ interface VideoDevice {
 
 interface VideoInputSelectorProps {
   onDeviceChange: (deviceId: string) => void;
+  selectedDeviceId?: string; // 외부에서 현재 선택된 장치 ID를 받음
 }
 
-const VideoInputSelector: React.FC<VideoInputSelectorProps> = ({ onDeviceChange }) => {
+const VideoInputSelector: React.FC<VideoInputSelectorProps> = ({
+  onDeviceChange,
+  selectedDeviceId
+}) => {
   const [devices, setDevices] = useState<VideoDevice[]>([]);
-  const [selectedDevice, setSelectedDevice] = useState<VideoDevice | null>(null);
 
   useEffect(() => {
     const initDevices = async () => {
-      await navigator.mediaDevices.getUserMedia({ video: true }); // 권한 요청
+      await navigator.mediaDevices.getUserMedia({ video: true });
 
       const deviceList = await navigator.mediaDevices.enumerateDevices();
       const videoInputs = deviceList
@@ -24,17 +27,19 @@ const VideoInputSelector: React.FC<VideoInputSelectorProps> = ({ onDeviceChange 
         .map((d) => ({ deviceId: d.deviceId, label: d.label || "이름 없는 카메라" }));
 
       setDevices(videoInputs);
-      setSelectedDevice(videoInputs[0]);
-      if (videoInputs[0]) {
-        onDeviceChange(videoInputs[0].deviceId); // 초기값 전달
+
+      // 초기 장치 설정
+      if (videoInputs.length > 0 && !selectedDeviceId) {
+        onDeviceChange(videoInputs[0].deviceId);
       }
     };
 
     initDevices();
-  }, [onDeviceChange]);
+  }, [onDeviceChange, selectedDeviceId]);
+
+  const selectedDevice = devices.find(d => d.deviceId === selectedDeviceId) || null;
 
   const handleDeviceChange = (device: VideoDevice) => {
-    setSelectedDevice(device);
     onDeviceChange(device.deviceId);
   };
 
@@ -45,7 +50,8 @@ const VideoInputSelector: React.FC<VideoInputSelectorProps> = ({ onDeviceChange 
       placeholder="비디오 장치를 선택하세요"
       labelKey="label"
       valueKey="deviceId"
-      initialValue={selectedDevice || undefined}
+      title="비디오 장치"
+      value={selectedDevice}
     />
   );
 };

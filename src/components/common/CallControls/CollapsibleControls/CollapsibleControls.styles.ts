@@ -15,7 +15,7 @@ export const ToggleTrigger = styled.button<{ $active?: boolean }>`
   padding: 0;
 
   &:hover {
-     background-color: ${({ $active }) => ($active ? '#F1F0F0' : '#e0e0e0')};
+     background-color: ${({ $active, theme }) => ($active ? theme.colors.background.gray : theme.colors.hover )};
   }
 `;
 

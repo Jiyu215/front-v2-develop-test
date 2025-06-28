@@ -5,8 +5,8 @@ export const PanelWrapper = styled.div<{ participantsVisible: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: ${({ participantsVisible }) => participantsVisible ? '100vh':'30vh'};
-  
+  // height: 100%;
+  height: ${({ participantsVisible }) => participantsVisible ? '100vh':'40vh'};
 `;
 
 export const ParticipantsList = styled.div`

@@ -6,7 +6,7 @@ export const DropdownContainer = styled.div`
     top: 80%;
     display: flex;
     align-items: flex-start;
-    width:100%;
+    width:auto;
 `;
 
 export const Selected = styled.div<{ $isHovered: boolean }>`
@@ -23,6 +23,11 @@ export const Selected = styled.div<{ $isHovered: boolean }>`
     font-size:${({theme})=>theme.fontSizes.xs};
     font-weight:${({theme})=>theme.fontWeights.bold};
 
+    max-width: 10rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     span{
         font-size:${({theme})=>theme.fontSizes.xxs};
         color:${({theme})=>theme.colors.text.muted};
@@ -31,10 +36,11 @@ export const Selected = styled.div<{ $isHovered: boolean }>`
 `;
 
 export const OptionsList = styled.ul<{ $isVisible: boolean }>`
+    width:100%;
     position: absolute;
-    bottom: 0%; 
-    right: calc(80% - ${({ theme }) => theme.spacings.xs});
-    background: white;
+    bottom: 0%;
+    left: calc(10rem + ${({ theme }) => theme.spacings.sm});
+    background: ${({theme})=>theme.colors.background.light};
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
     padding: ${({theme})=>theme.spacings.xs};
     list-style: none;
@@ -50,6 +56,6 @@ export const Option = styled.li`
     border-radius:${({theme})=>theme.borders.radius.sm};
     
     &:hover {
-        background: ${({theme})=>theme.colors.background.gray};
+        background: ${({theme})=>theme.colors.background.grayLight};
     }
 `;

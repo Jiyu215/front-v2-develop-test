@@ -8,6 +8,22 @@ export const Wrapper = styled.div`
     flex-direction: column;
     height: 100vh;
     background-color:${({theme})=>theme.colors.background.light};
+    color:${({theme})=>theme.colors.text.default};
+
+    input {
+        color:${({theme})=>theme.colors.text.default};
+        background-color:${({theme})=>theme.colors.background.light};
+    }
+    
+    select {
+        background-color:${({theme})=>theme.colors.background.grayLight};
+        color:${({theme})=>theme.colors.text.muted};
+        border: 1px solid ${({theme})=>theme.colors.background.gray};
+    }
+
+    option {
+        color:${({theme})=>theme.colors.text.default};
+    }
 `;
 
 export const WaitingWrapper = styled.div`
