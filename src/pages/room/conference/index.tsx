@@ -47,7 +47,7 @@ interface UserData {
 }
 
 const wsServerUrl = "wss://vmo.o-r.kr:8080";
-// const wsServerUrl = "ws://localhost:8080";
+//const wsServerUrl = "ws://localhost:8080";
 
 const iceServers = [
     { urls: "stuns:stun.l.google.com:19302" },
@@ -672,6 +672,8 @@ const Conference: React.FC<ConferenceProps> = ({
 
     const newUserJoined = (msg) => {
         receiveVideo(msg);
+        console.log(`${msg.username}님이 입장했습니다.`);
+        addSystemMessage(`${msg.username}님이 입장했습니다.`);
     }
 
     const sendExistingUsers = (msg) => {
@@ -878,6 +880,7 @@ const Conference: React.FC<ConferenceProps> = ({
         }
 
         console.log("👋 사용자 퇴장 처리 시작:", participant.username);
+        addSystemMessage(`${participant.username}님이 퇴장했습니다.`);
 
         // 1. WebRTC 연결 정리
         participant.dispose();

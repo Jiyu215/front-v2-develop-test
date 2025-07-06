@@ -101,7 +101,7 @@ const MicMoreMenu: React.FC<MicMoreMenuProps> = ({
             />
             </VolumeControlWrapper>
 
-            {isCurrentUserRoomLeader && (
+            {/* {isCurrentUserRoomLeader && (
                 <MenuItem onClick={handleMuteClick}>
                     통화방 마이크 끄기
                 </MenuItem>
@@ -110,7 +110,7 @@ const MicMoreMenu: React.FC<MicMoreMenuProps> = ({
                 <MenuItem onClick={handleVideoOffClick}>
                     통화방 비디오 끄기
                 </MenuItem>
-            )}
+            )} */}
         </Menu>
         )}
     </div>
