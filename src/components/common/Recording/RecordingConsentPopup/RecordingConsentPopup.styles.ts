@@ -59,7 +59,7 @@ export const StyledButton = styled.button<{ cancel?: boolean }>`
   border: none;
   border-radius: ${({ theme }) => theme.borders.radius.sm};
   background-color: ${({ cancel, theme }) => (cancel ? '#9e9e9e' : theme.colors.primary)};
-  color: white;
+  color:  #FFFFFF !important;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.3s ease;

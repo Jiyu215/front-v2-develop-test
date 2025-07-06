@@ -35,7 +35,7 @@ export const GrantButton = styled.button`
   flex: 1;
   padding: ${({ theme }) => theme.spacings.xs};
   background-color: ${({ theme }) => theme.colors.state.success};
-  color: #fff;
+  color: #FFFFFF !important;
   border: none;
   border-radius: ${({ theme }) => theme.borders.radius.sm};
   cursor: pointer;
@@ -49,7 +49,7 @@ export const DenyButton = styled.button`
   flex: 1;
   padding: ${({ theme }) => theme.spacings.xs};
   background-color: ${({ theme }) => theme.colors.state.error};
-  color: #fff;
+  color: #FFFFFF !important;
   border: none;
   border-radius: ${({ theme }) => theme.borders.radius.sm};
   cursor: pointer;

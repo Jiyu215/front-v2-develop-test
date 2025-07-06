@@ -38,7 +38,7 @@ const ConfirmButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
   padding: 0.75rem 1rem;
   background-color: ${({ theme, variant }) =>
     variant === 'secondary' ? '#ccc' : theme.colors.primary};
-  color: ${({ variant }) => (variant === 'secondary' ? '#333' : '#fff')};
+  color: ${({ variant }) => (variant === 'secondary' ? '#333' : '#FFFFFF')} !important;
   border: none;
   border-radius: ${({ theme }) => theme.borders.radius.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
